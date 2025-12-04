@@ -45,11 +45,24 @@ const About: React.FC = () => {
         </p>
       </motion.div>
 
-      <div className="grid grid-2">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        viewport={{ once: true }}
+        className="about-header-center"
+      >
+        <h2 className="about-name">{aboutData.name}</h2>
+        <div className="experience-badge">
+          Опыт работы: {aboutData.experience} {getYearWord(aboutData.experience)}
+        </div>
+      </motion.div>
+
+      <div className="grid grid-2 about-content-grid">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
           className="about-visual"
         >
@@ -68,13 +81,9 @@ const About: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="about-name">{aboutData.name}</h2>
-          <div className="experience-badge">
-            Опыт работы: {aboutData.experience} {getYearWord(aboutData.experience)}
-          </div>
           <div className="card card--highlight mb-4">
             <p>{aboutData.description}</p>
           </div>

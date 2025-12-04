@@ -39,15 +39,24 @@
   }
 }
 
+// Сетка для контента (фото + описание)
+.about-content-grid {
+  align-items: start;
+  margin-top: 2rem;
+}
+
 // Роскошный визуальный блок с фотографией
 .about-visual {
   text-align: center;
   position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   
   &__image-container {
     width: 100%;
     max-width: 420px;
-    margin: 0 auto;
+    margin: 0;
     border-radius: var(--radius-2xl);
     overflow: hidden;
     box-shadow: var(--shadow-luxury);
@@ -57,6 +66,7 @@
     
     @media (max-width: 768px) {
       max-width: 350px;
+      margin: 0 auto;
     }
     
     @media (max-width: 480px) {
@@ -112,15 +122,26 @@
   }
 }
 
+// Центральный заголовок с именем и опытом
+.about-header-center {
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+  }
+}
+
 // Элегантное имя с подчеркиванием
 .about-name {
   color: var(--text-primary) !important; // Четкий черный
   font-weight: 700;
-  margin-bottom: 2.5rem; // Увеличено
+  margin-bottom: 1.5rem; // Уменьшено
   font-size: clamp(2.5rem, 6vw, 3.8rem); // Увеличено
   position: relative;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: 'Playfair Display', serif;
+  text-align: center;
   
   // Переопределяем глобальные стили h2, которые делают текст прозрачным
   background: none !important;
@@ -150,7 +171,7 @@
   border-radius: var(--radius-lg);
   font-weight: 700;
   font-size: 1.1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   box-shadow: var(--shadow-luxury);
   position: relative;
   overflow: hidden;
