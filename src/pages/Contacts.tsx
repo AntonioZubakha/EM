@@ -38,7 +38,7 @@ const Contacts: React.FC = () => {
             className="contacts-card__facade"
           >
             <img 
-              src="/5298658092193091212.jpg" 
+              src="/facade-building.png" 
               alt="Фасад здания" 
               className="contacts-card__facade-image"
               loading="lazy"
