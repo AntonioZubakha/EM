@@ -7,10 +7,24 @@ import PriceList from './pages/PriceList';
 import Portfolio from './pages/Portfolio';
 import Contacts from './pages/Contacts';
 import Booking from './pages/Booking';
+import Admin from './pages/Admin';
 import { trackPageView, trackNavigationClick } from './utils/analytics';
 
 function App() {
   const [activeSection, setActiveSection] = useState('about');
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+
+  // Проверка админ-роута
+  useEffect(() => {
+    const checkAdminRoute = () => {
+      const hash = window.location.hash;
+      setIsAdminRoute(hash === '#admin');
+    };
+
+    checkAdminRoute();
+    window.addEventListener('hashchange', checkAdminRoute);
+    return () => window.removeEventListener('hashchange', checkAdminRoute);
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -68,6 +82,11 @@ function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [activeSection]);
+
+  // Если админ-роут, показываем только админку
+  if (isAdminRoute) {
+    return <Admin />;
+  }
 
   return (
     <div className="app">
