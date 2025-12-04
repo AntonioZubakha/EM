@@ -265,7 +265,7 @@ p {
 }
 
 .nav {
-  padding: 1.5rem 0;
+  padding: 0.8rem 0;
 }
 
 .nav-container {
@@ -288,7 +288,7 @@ p {
     font-family: 'Playfair Display', serif;
     color: var(--primary-rose-dark) !important;
     margin: 0;
-    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
     font-weight: 700;
     letter-spacing: -0.02em;
     position: relative;
@@ -316,10 +316,10 @@ p {
   }
   
   span {
-    font-size: 1.6rem; // Увеличено
+    font-size: 1.3rem;
     color: var(--text-primary); // Более контрастный
-    font-weight: 600; // Увеличено
-    margin-top: 0.3rem; // Увеличено
+    font-weight: 600;
+    margin-top: 0.2rem;
     display: block;
     font-style: italic;
     font-family: 'Great Vibes', cursive;
@@ -351,10 +351,10 @@ p {
 .nav-link {
   background: none;
   border: none;
-  padding: 1rem 2rem; // Увеличено
+  padding: 0.6rem 1.5rem;
   border-radius: var(--radius-md);
-  font-size: 1.1rem; // Увеличено
-  font-weight: 600; // Увеличено
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text-primary); // Более контрастный
   cursor: pointer;
   transition: all 0.3s ease;
@@ -400,11 +400,11 @@ p {
 
 // Основной контент
 .main {
-  margin-top: 120px;
+  margin-top: 80px;
   flex: 1;
   
   @media (max-width: 768px) {
-    margin-top: 140px;
+    margin-top: 100px;
   }
 }
 
