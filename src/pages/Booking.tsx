@@ -24,15 +24,15 @@ const Booking: React.FC = () => {
     const month = date.getMonth(); // 0-11 (0 = январь, 11 = декабрь)
     const day = date.getDate();
     
-    // Декабрь 2024: рабочие дни 3-4, 7-8, 11-12, 15-16, 19-20, 23-24, 27-28 (31 не рабочий)
-    if (year === 2024 && month === 11) { // декабрь = 11
+    // Декабрь: рабочие дни 3-4, 7-8, 11-12, 15-16, 19-20, 23-24, 27-28 (31 не рабочий)
+    if (month === 11) { // декабрь = 11
       const decemberWorkingDays = [3, 4, 7, 8, 11, 12, 15, 16, 19, 20, 23, 24, 27, 28];
       return decemberWorkingDays.includes(day);
     }
     
-    // Январь 2025: новогодние каникулы 1-8 (не рабочие), затем рабочие дни 9, 12-13, 16-17, 20-21, 24-25, 28-29...
-    if (year === 2025 && month === 0) { // январь = 0
-      // Новогодние каникулы: 1-8 января - не рабочие дни
+    // Январь: новогодние каникулы 1-8 (не рабочие), затем рабочие дни 9, 12-13, 16-17, 20-21, 24-25, 28-29...
+    if (month === 0) { // январь = 0
+      // Новогодние каникулы: 1-8 января - не рабочие дни (для любого года)
       if (day >= 1 && day <= 8) {
         return false;
       }
@@ -43,7 +43,7 @@ const Booking: React.FC = () => {
       }
       
       // Паттерн: пары дней начиная с 12-13, затем каждые 4 дня новая пара
-      // 12-13, 16-17, 20-21, 24-25, 28-29, 30-31
+      // 12-13, 16-17, 20-21, 24-25, 28-29
       if (day >= 12) {
         const daysFrom12 = day - 12;
         const cycleDay = daysFrom12 % 4;
@@ -54,10 +54,11 @@ const Booking: React.FC = () => {
       return false;
     }
     
-    // Для будущих месяцев применяем паттерн: 2 рабочих дня, 2 выходных (цикл 4 дня)
-    if (year === 2025 && month >= 1) {
-      // Используем последний рабочий день января 29 как точку отсчета
-      const lastJanWorkDay = new Date(2025, 0, 29);
+    // Для остальных месяцев применяем паттерн: 2 рабочих дня, 2 выходных (цикл 4 дня)
+    // Начинаем с 1 февраля (после последнего рабочего дня января - 29)
+    if (month >= 1) {
+      // Используем последний рабочий день января (29) текущего года как точку отсчета
+      const lastJanWorkDay = new Date(year, 0, 29); // 29 января текущего года
       const daysDiff = Math.round((date.getTime() - lastJanWorkDay.getTime()) / (1000 * 60 * 60 * 24));
       
       // Первые 3 дня после 29 января - выходные, затем цикл 4 дня
@@ -65,19 +66,6 @@ const Booking: React.FC = () => {
         const adjustedDays = daysDiff - 4; // Смещаем на начало следующего цикла
         const cycleDay = adjustedDays % 4;
         return cycleDay < 2; // Первые 2 дня цикла - рабочие
-      }
-      return false;
-    }
-    
-    // Для лет после 2025 продолжаем паттерн
-    if (year > 2025) {
-      const referenceDate = new Date(2025, 0, 29);
-      const daysDiff = Math.round((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff >= 4) {
-        const adjustedDays = daysDiff - 4;
-        const cycleDay = adjustedDays % 4;
-        return cycleDay < 2;
       }
       return false;
     }
