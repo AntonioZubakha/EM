@@ -706,17 +706,13 @@
   
   &__header {
     background: var(--gradient-primary);
-    color: var(--text-white);
+    color: var(--text-white) !important;
     font-weight: 700;
     padding: 1.5rem 1.2rem;
     text-align: left;
     font-size: 1.2rem;
     border-bottom: 3px solid var(--primary-rose-dark);
     white-space: nowrap;
-    
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
     
     &--service {
       min-width: 200px;
@@ -731,6 +727,9 @@
     &--duration {
       min-width: 120px;
       width: 15%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     &--price {
