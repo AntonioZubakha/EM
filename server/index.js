@@ -8,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 // Путь к файлу данных (работает и локально, и на Render)
 const BOOKED_SLOTS_FILE = path.join(__dirname, 'data', 'bookedSlots.json');
+const WORKING_DAYS_FILE = path.join(__dirname, 'data', 'workingDays.json');
 
 // Middleware
 app.use(cors());
@@ -24,6 +25,39 @@ async function ensureBookedSlotsFile() {
   } catch {
     // Файл не существует, создаем пустой
     await fs.writeFile(BOOKED_SLOTS_FILE, JSON.stringify({ bookedSlots: [] }, null, 2));
+  }
+}
+
+// Инициализация файла с рабочими днями если его нет
+async function ensureWorkingDaysFile() {
+  try {
+    await fs.access(WORKING_DAYS_FILE);
+  } catch {
+    // Файл не существует, создаем пустой
+    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides: {} }, null, 2));
+  }
+}
+
+// Загрузить настройки рабочих дней
+async function loadWorkingDays() {
+  try {
+    const data = await fs.readFile(WORKING_DAYS_FILE, 'utf-8');
+    const json = JSON.parse(data);
+    return json.overrides || {};
+  } catch (error) {
+    console.error('Ошибка при чтении файла рабочих дней:', error);
+    return {};
+  }
+}
+
+// Сохранить настройки рабочих дней
+async function saveWorkingDays(overrides) {
+  try {
+    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides }, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Ошибка при сохранении файла рабочих дней:', error);
+    return false;
   }
 }
 

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { getBookedSlotsForDate, releaseSlot } from '../utils/bookingSlots';
+import { isWorkingDayBase, setDayStatus, removeDayOverride, loadWorkingDaysOverrides } from '../utils/workingDays';
 import './Admin.scss';
 
 const ADMIN_LOGIN = 'ElenaK';
@@ -18,6 +19,7 @@ const Admin: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [workingDaysOverrides, setWorkingDaysOverrides] = useState<Record<string, 'working' | 'off'>>({});
 
   const timeSlots = [
     '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
@@ -30,6 +32,15 @@ const Admin: React.FC = () => {
       setIsAuthenticated(true);
     }
   }, []);
+
+  // Загрузка переопределений рабочих дней
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadWorkingDaysOverrides().then(overrides => {
+        setWorkingDaysOverrides(overrides);
+      });
+    }
+  }, [isAuthenticated, currentMonth]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,12 +61,24 @@ const Admin: React.FC = () => {
     setBookedSlots([]);
   };
 
-  // Загрузка занятых слотов при выборе даты
+  // Загрузка занятых слотов при выборе даты (только для рабочих дней)
   useEffect(() => {
     if (selectedDate) {
-      loadBookedSlots();
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const hasOverride = dateStr in workingDaysOverrides;
+      const baseIsWorking = isWorkingDayBase(selectedDate);
+      const isWorking = hasOverride 
+        ? workingDaysOverrides[dateStr] === 'working'
+        : baseIsWorking;
+      
+      if (isWorking) {
+        loadBookedSlots();
+      } else {
+        setBookedSlots([]);
+        setSelectedDate(null);
+      }
     }
-  }, [selectedDate]);
+  }, [selectedDate, workingDaysOverrides]);
 
   const loadBookedSlots = async () => {
     if (!selectedDate) return;
@@ -146,19 +169,104 @@ const Admin: React.FC = () => {
     <div key={`empty-${i}`} className="admin-calendar-day empty"></div>
   ));
 
+  const handleToggleDayStatus = async (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const baseIsWorking = isWorkingDayBase(date);
+    const hasOverride = dateStr in workingDaysOverrides;
+    
+    let newStatus: 'working' | 'off';
+    
+    if (hasOverride) {
+      // Если есть переопределение, переключаем на противоположное
+      newStatus = workingDaysOverrides[dateStr] === 'working' ? 'off' : 'working';
+    } else {
+      // Если нет переопределения, создаем противоположное базовому
+      newStatus = baseIsWorking ? 'off' : 'working';
+    }
+    
+    setLoading(true);
+    try {
+      const success = await setDayStatus(date, newStatus);
+      if (success) {
+        setWorkingDaysOverrides(prev => ({ ...prev, [dateStr]: newStatus }));
+        // Если день стал выходным и был выбран, сбрасываем выбор
+        if (newStatus === 'off' && selectedDate && isSameDay(date, selectedDate)) {
+          setSelectedDate(null);
+          setBookedSlots([]);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при изменении статуса дня:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveOverride = async (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    
+    setLoading(true);
+    try {
+      const success = await removeDayOverride(date);
+      if (success) {
+        const newOverrides = { ...workingDaysOverrides };
+        delete newOverrides[dateStr];
+        setWorkingDaysOverrides(newOverrides);
+        // Если день стал выходным и был выбран, сбрасываем выбор
+        const baseIsWorking = isWorkingDayBase(date);
+        if (!baseIsWorking && selectedDate && isSameDay(date, selectedDate)) {
+          setSelectedDate(null);
+          setBookedSlots([]);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении переопределения:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   daysInMonth.forEach((day) => {
     const isSelected = selectedDate && isSameDay(day, selectedDate);
     const isCurrentToday = isToday(day);
+    const dateStr = format(day, 'yyyy-MM-dd');
+    
+    // Определяем статус дня
+    const hasOverride = dateStr in workingDaysOverrides;
+    const baseIsWorking = isWorkingDayBase(day);
+    const isWorking = hasOverride 
+      ? workingDaysOverrides[dateStr] === 'working'
+      : baseIsWorking;
 
     calendarDays.push(
       <motion.button
         key={day.toString()}
-        onClick={() => setSelectedDate(day)}
-        className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''}`}
-        whileHover={{ scale: 1.05 }}
+        onClick={(e) => {
+          // Правый клик или Ctrl+клик - переключение статуса дня
+          if (e.ctrlKey || (e as any).button === 2) {
+            e.preventDefault();
+            handleToggleDayStatus(day);
+          } else {
+            // Обычный клик - выбор дня (только для рабочих дней)
+            if (isWorking) {
+              setSelectedDate(day);
+            }
+          }
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          handleToggleDayStatus(day);
+        }}
+        className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
+        whileHover={isWorking ? { scale: 1.05 } : {}}
         whileTap={{ scale: 0.95 }}
+        disabled={!isWorking && !hasOverride}
+        title={hasOverride 
+          ? `${isWorking ? 'Рабочий' : 'Выходной'} (изменено). Ctrl+клик или ПКМ для изменения`
+          : `${isWorking ? 'Рабочий день' : 'Выходной'}. Ctrl+клик или ПКМ для изменения`}
       >
         <span>{format(day, 'd')}</span>
+        {hasOverride && <span className="admin-calendar-day__override-icon">⚙</span>}
       </motion.button>
     );
   });
@@ -258,7 +366,33 @@ const Admin: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
           >
             <div className="admin-slots-header">
-              <h3>Слоты на {format(selectedDate, 'd MMMM yyyy', { locale: ru })}</h3>
+              <div>
+                <h3>Слоты на {format(selectedDate, 'd MMMM yyyy', { locale: ru })}</h3>
+                {(() => {
+                  const dateStr = format(selectedDate, 'yyyy-MM-dd');
+                  const hasOverride = dateStr in workingDaysOverrides;
+                  if (hasOverride) {
+                    return (
+                      <div className="admin-slots-header__info">
+                        <span className="admin-slots-header__override-badge">
+                          ⚙ Изменено администратором
+                        </span>
+                        <motion.button
+                          onClick={() => handleRemoveOverride(selectedDate)}
+                          className="btn btn-secondary btn-xs"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.98 }}
+                          disabled={loading}
+                          title="Вернуть к автоматическому расписанию"
+                        >
+                          Вернуть автоматически
+                        </motion.button>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
               {bookedSlots.length > 0 && (
                 <motion.button
                   onClick={handleClearAllSlots}
@@ -301,7 +435,10 @@ const Admin: React.FC = () => {
 
         {!selectedDate && (
           <div className="admin-hint">
-            <p>Выберите дату в календаре для управления слотами</p>
+            <p>Выберите рабочий день в календаре для управления слотами</p>
+            <p className="admin-hint__tip">
+              💡 <strong>Совет:</strong> Ctrl+клик или правый клик по дню для изменения статуса (рабочий/выходной)
+            </p>
           </div>
         )}
       </div>
