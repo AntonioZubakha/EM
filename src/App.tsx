@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import About from './pages/About';
+import Cabinet from './pages/Cabinet';
 import Services from './pages/Services';
 import PriceList from './pages/PriceList';
 import Portfolio from './pages/Portfolio';
@@ -19,7 +20,7 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['about', 'services', 'pricelist', 'portfolio', 'booking'];
+      const sections = ['about', 'cabinet', 'services', 'pricelist', 'portfolio', 'booking'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -54,6 +55,7 @@ function App() {
             <ul className="nav-list">
               {[
                 { id: 'about', label: 'Обо мне' },
+                { id: 'cabinet', label: 'Мой кабинет' },
                 { id: 'services', label: 'Услуги' },
                 { id: 'pricelist', label: 'Прейскурант' },
                 { id: 'portfolio', label: 'Мои работы' },
@@ -76,6 +78,10 @@ function App() {
       <main className="main" role="main">
         <section id="about" className="section" aria-label="О мастере">
           <About />
+        </section>
+        
+        <section id="cabinet" className="section" aria-label="Мой кабинет">
+          <Cabinet />
         </section>
         
         <section id="services" className="section" aria-label="Услуги">
