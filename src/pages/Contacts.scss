@@ -24,6 +24,21 @@
 }
 
 .contacts-card {
+  &__facade {
+    width: 100%;
+    margin-bottom: 2rem;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    
+    &-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+  }
+
   &__list {
     display: flex;
     flex-direction: column;
@@ -46,7 +61,8 @@
       transform: translateX(5px);
       
       .contacts-card__label,
-      .contacts-card__value {
+      .contacts-card__value,
+      .contacts-card__hint {
         color: var(--text-white);
       }
       
@@ -70,6 +86,15 @@
     color: var(--text-primary);
     line-height: 1.5;
     font-weight: 500;
+  }
+
+  &__hint {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    opacity: 0.9;
   }
   
   &__buttons {

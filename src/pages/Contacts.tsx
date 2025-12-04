@@ -29,6 +29,22 @@ const Contacts: React.FC = () => {
         className="contacts-container"
       >
         <div className="card contacts-card">
+          {/* Фото фасада */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            viewport={{ once: true }}
+            className="contacts-card__facade"
+          >
+            <img 
+              src="/5298658092193091212.jpg" 
+              alt="Фасад здания" 
+              className="contacts-card__facade-image"
+              loading="lazy"
+            />
+          </motion.div>
+
           <div className="contacts-card__list">
             <motion.div
               className="contacts-card__item"
@@ -38,7 +54,11 @@ const Contacts: React.FC = () => {
               <LocationIcon size={24} color="var(--primary-rose)" />
               <div>
                 <div className="contacts-card__label">Адрес</div>
-                <div className="contacts-card__value">г. Железнодорожный, ул. Маяковского д. 12, 1 подъезд, 1 этаж, 101</div>
+                <div className="contacts-card__value">
+                  г. Железнодорожный, ул. Маяковского д. 12, 1 подъезд, 1 этаж, 101
+                  <br />
+                  <span className="contacts-card__hint">В подъезде сразу налево, второй раз налево и третий раз налево</span>
+                </div>
               </div>
             </motion.div>
             <motion.div

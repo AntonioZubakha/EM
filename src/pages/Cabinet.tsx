@@ -16,7 +16,6 @@ const Cabinet: React.FC = () => {
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
   const cabinetPhotos = [
-    { img: '/5298658092193091212.jpg', alt: 'Кабинет мастера' },
     { img: '/5427244503883969651.jpg', alt: 'Кабинет мастера' },
     { img: '/5427244503883969652.jpg', alt: 'Оборудование и стерилизация' },
     { img: '/5429213501576052044.jpg', alt: 'Продукция CND Shellac' },
