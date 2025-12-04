@@ -7,6 +7,7 @@ import PriceList from './pages/PriceList';
 import Portfolio from './pages/Portfolio';
 import Contacts from './pages/Contacts';
 import Booking from './pages/Booking';
+import { trackPageView, trackNavigationClick } from './utils/analytics';
 
 function App() {
   const [activeSection, setActiveSection] = useState('about');
@@ -16,10 +17,26 @@ function App() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
       setActiveSection(sectionId);
+      
+      // Отслеживание навигации в Google Analytics
+      const sectionNames: Record<string, string> = {
+        about: 'Обо мне',
+        cabinet: 'Мой кабинет',
+        services: 'Услуги',
+        pricelist: 'Прейскурант',
+        portfolio: 'Мои работы',
+        contacts: 'Контакты',
+        booking: 'Записаться',
+      };
+      const sectionName = sectionNames[sectionId] || sectionId;
+      trackNavigationClick(sectionId, sectionName);
     }
   };
 
   useEffect(() => {
+    // Отслеживание первой загрузки страницы
+    trackPageView('about', 'Обо мне');
+    
     const handleScroll = () => {
       const sections = ['about', 'cabinet', 'services', 'pricelist', 'portfolio', 'contacts', 'booking'];
       const currentSection = sections.find(section => {
@@ -30,14 +47,27 @@ function App() {
         }
         return false;
       });
-      if (currentSection) {
+      if (currentSection && currentSection !== activeSection) {
         setActiveSection(currentSection);
+        
+        // Отслеживание просмотра секции в Google Analytics
+        const sectionNames: Record<string, string> = {
+          about: 'Обо мне',
+          cabinet: 'Мой кабинет',
+          services: 'Услуги',
+          pricelist: 'Прейскурант',
+          portfolio: 'Мои работы',
+          contacts: 'Контакты',
+          booking: 'Записаться',
+        };
+        const sectionName = sectionNames[currentSection] || currentSection;
+        trackPageView(currentSection, sectionName);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [activeSection]);
 
   return (
     <div className="app">

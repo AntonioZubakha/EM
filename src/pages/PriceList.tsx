@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import pricelistData from '../data/pricelist.json';
 import { ManicureIcon, PedicureIcon, ClockIcon, CheckIcon, LightbulbIcon } from '../components/Icons';
+import { trackBookingClick } from '../utils/analytics';
 import './PriceList.scss';
 
 const PriceList: React.FC = () => {
@@ -104,6 +105,9 @@ const PriceList: React.FC = () => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
+                        // Отслеживание клика по кнопке записи
+                        trackBookingClick(`PriceList: ${service.name}`);
+                        
                         const bookingElement = document.getElementById('booking');
                         if (bookingElement) {
                           bookingElement.scrollIntoView({ behavior: 'smooth' });

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import servicesData from '../data/services.json';
 import { ManicureIcon, PedicureIcon, ChildrenIcon, MenIcon, CheckIcon } from '../components/Icons';
+import { trackBookingClick, trackServiceClick } from '../utils/analytics';
 import './Services.scss';
 
 const Services: React.FC = () => {
@@ -120,6 +121,10 @@ const Services: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
+                // Отслеживание клика по кнопке записи
+                trackBookingClick(`Services: ${activeService.name}`);
+                trackServiceClick(activeService.name);
+                
                 const bookingElement = document.getElementById('booking');
                 if (bookingElement) {
                   bookingElement.scrollIntoView({ behavior: 'smooth' });

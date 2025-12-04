@@ -4,6 +4,7 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import { ru } from 'date-fns/locale';
 import servicesData from '../data/services.json';
 import { LocationIcon, PhoneIcon, SuccessIcon, CheckIcon, ClockIcon, CardIcon, GiftIcon, CalendarIcon } from '../components/Icons';
+import { trackBookingSubmit, trackBookingSuccess, trackBookingError, trackPhoneClick, trackTelegramClick } from '../utils/analytics';
 import './Booking.scss';
 
 const Booking: React.FC = () => {
@@ -142,9 +143,22 @@ const Booking: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Отслеживание отправки формы
+    const dateStr = selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : undefined;
+    trackBookingSubmit(formData.service, dateStr, selectedTime || undefined);
+    
     // Используем переменные окружения Vite (префикс VITE_)
-    const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '8598130292:AAFLDD-3ucZmJqkPfXmaLC_rifTBeGMHkHA';
-    const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID || '-1003270227940';
+    const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+    const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+    
+    // Проверка наличия обязательных переменных окружения
+    if (!botToken || !chatId) {
+      const errorMsg = 'Отсутствуют переменные окружения для Telegram бота';
+      trackBookingError(errorMsg);
+      alert('Ошибка конфигурации: не настроены переменные окружения для Telegram бота. Обратитесь к администратору сайта.');
+      console.error('Отсутствуют переменные окружения: VITE_TELEGRAM_BOT_TOKEN или VITE_TELEGRAM_CHAT_ID');
+      return;
+    }
     
     const message = `🎯 *Новая заявка на запись*\n\n` +
       `👤 *Имя:* ${formData.name}\n` +
@@ -169,6 +183,8 @@ const Booking: React.FC = () => {
       });
       
       if (response.ok) {
+        // Отслеживание успешной отправки
+        trackBookingSuccess();
         setIsSubmitted(true);
         setFormData({
           name: '',
@@ -181,10 +197,14 @@ const Booking: React.FC = () => {
         setTimeout(() => setIsSubmitted(false), 5000);
       } else {
         const errorData = await response.json();
+        const errorMsg = `Telegram API error: ${errorData.description || 'Unknown error'}`;
+        trackBookingError(errorMsg);
         console.error('Ошибка отправки в Telegram:', errorData);
         alert('Произошла ошибка при отправке заявки. Пожалуйста, свяжитесь со мной напрямую по телефону.');
       }
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Network error';
+      trackBookingError(errorMsg);
       console.error('Ошибка при отправке заявки:', error);
       alert('Произошла ошибка при отправке заявки. Пожалуйста, свяжитесь со мной напрямую по телефону.');
     }
@@ -446,7 +466,10 @@ const Booking: React.FC = () => {
               <motion.div
                 className="booking-contacts__item"
                 whileHover={{ scale: 1.02 }}
-                onClick={() => window.open(`tel:${phoneNumber.replace(/[-\s]/g, '')}`)}
+                onClick={() => {
+                  trackPhoneClick();
+                  window.open(`tel:${phoneNumber.replace(/[-\s]/g, '')}`);
+                }}
               >
                 <PhoneIcon size={24} color="var(--primary-rose)" />
                 <div>
@@ -463,6 +486,7 @@ const Booking: React.FC = () => {
                 className="btn btn-secondary"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => trackTelegramClick()}
               >
                 Telegram
               </motion.a>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { LocationIcon, PhoneIcon } from '../components/Icons';
+import { trackPhoneClick, trackTelegramClick } from '../utils/analytics';
 import './Contacts.scss';
 
 const Contacts: React.FC = () => {
@@ -64,7 +65,10 @@ const Contacts: React.FC = () => {
             <motion.div
               className="contacts-card__item"
               whileHover={{ scale: 1.02 }}
-              onClick={() => window.open(`tel:${phoneNumber.replace(/[-\s]/g, '')}`)}
+              onClick={() => {
+                trackPhoneClick();
+                window.open(`tel:${phoneNumber.replace(/[-\s]/g, '')}`);
+              }}
             >
               <PhoneIcon size={24} color="var(--primary-rose)" />
               <div>
@@ -81,6 +85,7 @@ const Contacts: React.FC = () => {
               className="btn btn-primary"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => trackTelegramClick()}
             >
               Telegram
             </motion.a>
