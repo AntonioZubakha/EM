@@ -5,6 +5,7 @@ import Cabinet from './pages/Cabinet';
 import Services from './pages/Services';
 import PriceList from './pages/PriceList';
 import Portfolio from './pages/Portfolio';
+import Contacts from './pages/Contacts';
 import Booking from './pages/Booking';
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['about', 'cabinet', 'services', 'pricelist', 'portfolio', 'booking'];
+      const sections = ['about', 'cabinet', 'services', 'pricelist', 'portfolio', 'contacts', 'booking'];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -59,6 +60,7 @@ function App() {
                 { id: 'services', label: 'Услуги' },
                 { id: 'pricelist', label: 'Прейскурант' },
                 { id: 'portfolio', label: 'Мои работы' },
+                { id: 'contacts', label: 'Контакты' },
                 { id: 'booking', label: 'Записаться' }
               ].map((item) => (
                 <li key={item.id}>
@@ -94,6 +96,10 @@ function App() {
         
         <section id="portfolio" className="section" aria-label="Портфолио работ">
           <Portfolio />
+        </section>
+
+        <section id="contacts" className="section" aria-label="Контакты">
+          <Contacts />
         </section>
 
         <section id="booking" className="section" aria-label="Записаться на процедуру">

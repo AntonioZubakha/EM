@@ -1,0 +1,109 @@
+// Contacts Page
+
+.contacts-section {
+  position: relative;
+  padding: 4rem 0;
+  
+  // Акварельный фоновый паттерн
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-watercolor);
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+.contacts-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contacts-card {
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--gradient-soft);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: var(--primary-rose);
+      transform: translateX(5px);
+      
+      .contacts-card__label,
+      .contacts-card__value {
+        color: var(--text-white);
+      }
+      
+      svg {
+        color: var(--text-white) !important;
+      }
+    }
+  }
+  
+  &__label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  &__value {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+  
+  &__buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    
+    @media (max-width: 480px) {
+      flex-direction: column;
+    }
+  }
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+  .contacts-section {
+    padding: 3rem 0;
+  }
+  
+  .contacts-card {
+    &__item {
+      padding: 1.2rem;
+    }
+    
+    &__value {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .contacts-section {
+    padding: 2rem 0;
+  }
+}
+
