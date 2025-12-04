@@ -3,8 +3,11 @@ import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
+// @ts-expect-error - CSS imports don't have type definitions
 import 'swiper/css';
+// @ts-expect-error - CSS imports don't have type definitions
 import 'swiper/css/navigation';
+// @ts-expect-error - CSS imports don't have type definitions
 import 'swiper/css/pagination';
 
 import './Portfolio.scss';
