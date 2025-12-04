@@ -457,6 +457,13 @@ p {
   }
 }
 
+// Глобальные правила для предотвращения переполнения
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 // Роскошная система карточек
 .card {
   background: var(--surface-primary);
@@ -468,6 +475,9 @@ p {
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   
   &::before {
     content: '';
@@ -494,6 +504,10 @@ p {
   @media (max-width: 768px) {
     padding: 2rem;
     border-radius: var(--radius-lg);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1.5rem;
   }
 }
 
