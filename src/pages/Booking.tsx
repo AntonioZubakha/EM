@@ -20,12 +20,10 @@ const Booking: React.FC = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [bookedSlotsMap, setBookedSlotsMap] = useState<Record<string, string[]>>({});
-  const [loadingSlots, setLoadingSlots] = useState(false);
 
   // Загружаем занятые слоты при монтировании и при смене месяца
   useEffect(() => {
     const loadBookedSlots = async () => {
-      setLoadingSlots(true);
       try {
         const slots = await getBookedSlots();
         // Группируем по датам
@@ -39,8 +37,6 @@ const Booking: React.FC = () => {
         setBookedSlotsMap(slotsByDate);
       } catch (error) {
         console.error('Ошибка при загрузке занятых слотов:', error);
-      } finally {
-        setLoadingSlots(false);
       }
     };
     
