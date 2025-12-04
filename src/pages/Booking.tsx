@@ -5,6 +5,7 @@ import { ru } from 'date-fns/locale';
 import servicesData from '../data/services.json';
 import { LocationIcon, PhoneIcon, SuccessIcon, CheckIcon, ClockIcon, CardIcon, GiftIcon, CalendarIcon } from '../components/Icons';
 import { trackBookingSubmit, trackBookingSuccess, trackBookingError, trackPhoneClick, trackTelegramClick } from '../utils/analytics';
+import { getBookedSlotsForDate, isSlotBooked, bookSlot, getBookedSlots } from '../utils/bookingSlots';
 import './Booking.scss';
 
 const Booking: React.FC = () => {
@@ -18,6 +19,33 @@ const Booking: React.FC = () => {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [bookedSlotsMap, setBookedSlotsMap] = useState<Record<string, string[]>>({});
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Загружаем занятые слоты при монтировании и при смене месяца
+  useEffect(() => {
+    const loadBookedSlots = async () => {
+      setLoadingSlots(true);
+      try {
+        const slots = await getBookedSlots();
+        // Группируем по датам
+        const slotsByDate: Record<string, string[]> = {};
+        slots.forEach(slot => {
+          if (!slotsByDate[slot.date]) {
+            slotsByDate[slot.date] = [];
+          }
+          slotsByDate[slot.date].push(slot.time);
+        });
+        setBookedSlotsMap(slotsByDate);
+      } catch (error) {
+        console.error('Ошибка при загрузке занятых слотов:', error);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    
+    loadBookedSlots();
+  }, [currentMonth]);
 
   // Функция определения рабочих дней согласно новому расписанию
   const isWorkingDay = (date: Date): boolean => {
@@ -92,6 +120,9 @@ const Booking: React.FC = () => {
     const isPast = isBefore(day, tomorrow);
     const isSelected = selectedDate && isSameDay(day, selectedDate);
     const isCurrentToday = isToday(day);
+    // Проверяем, есть ли занятые слоты на эту дату
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const hasBookedSlots = bookedSlotsMap[dateStr] && bookedSlotsMap[dateStr].length > 0;
 
     calendarDays.push(
       <motion.button
@@ -102,12 +133,14 @@ const Booking: React.FC = () => {
           }
         }}
         disabled={isPast || !isWorking}
-        className={`calendar-day ${isWorking ? 'work-day' : ''} ${isPast ? 'past-day' : ''} ${isSelected ? 'selected-day' : ''} ${isCurrentToday ? 'today' : ''}`}
+        className={`calendar-day ${isWorking ? 'work-day' : ''} ${isPast ? 'past-day' : ''} ${isSelected ? 'selected-day' : ''} ${isCurrentToday ? 'today' : ''} ${hasBookedSlots ? 'has-bookings' : ''}`}
         whileHover={isWorking && !isPast ? { scale: 1.05 } : {}}
         whileTap={isWorking && !isPast ? { scale: 0.95 } : {}}
+        title={hasBookedSlots ? 'На этот день есть записи' : ''}
       >
         <span className="calendar-day__number">{format(day, 'd')}</span>
         {isCurrentToday && <div className="calendar-day__today-marker" />}
+        {hasBookedSlots && !isSelected && <div className="calendar-day__bookings-marker" />}
       </motion.button>
     );
   });
@@ -115,6 +148,17 @@ const Booking: React.FC = () => {
   const timeSlots = [
     '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
   ];
+
+  // Сбрасываем выбранное время, если оно стало занятым при изменении даты
+  useEffect(() => {
+    if (selectedDate && selectedTime) {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const booked = bookedSlotsMap[dateStr] || [];
+      if (booked.includes(selectedTime)) {
+        setSelectedTime('');
+      }
+    }
+  }, [selectedDate, selectedTime, bookedSlotsMap]);
 
   // Автопрокрутка при выборе времени - к форме записи
   useEffect(() => {
@@ -142,6 +186,20 @@ const Booking: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Проверяем, что выбранные дата и время не заняты
+    if (selectedDate && selectedTime) {
+      const isBooked = await isSlotBooked(selectedDate, selectedTime);
+      if (isBooked) {
+        alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+        setSelectedTime('');
+        // Обновляем список занятых слотов
+        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+        const slots = await getBookedSlotsForDate(selectedDate);
+        setBookedSlotsMap(prev => ({ ...prev, [dateStr]: slots }));
+        return;
+      }
+    }
     
     // Отслеживание отправки формы
     const dateStr = selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : undefined;
@@ -183,6 +241,22 @@ const Booking: React.FC = () => {
       });
       
       if (response.ok) {
+        // Автоматически резервируем слот на сервере
+        if (selectedDate && selectedTime) {
+          const booked = await bookSlot(selectedDate, selectedTime, formData.name, formData.phone, formData.service);
+          if (booked) {
+            // Обновляем локальный кэш занятых слотов
+            const dateStr = format(selectedDate, 'yyyy-MM-dd');
+            const updatedSlots = await getBookedSlotsForDate(selectedDate);
+            setBookedSlotsMap(prev => ({ ...prev, [dateStr]: updatedSlots }));
+          } else {
+            // Если не удалось забронировать (например, уже занято), показываем ошибку
+            alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+            setSelectedTime('');
+            return;
+          }
+        }
+        
         // Отслеживание успешной отправки
         trackBookingSuccess();
         setIsSubmitted(true);
@@ -315,23 +389,33 @@ const Booking: React.FC = () => {
               <div className="booking-time-slots__grid">
                 {timeSlots.map((time, index) => {
                   const isSelected = selectedTime === time;
+                  const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+                  const isBooked = selectedDate ? (bookedSlotsMap[dateStr] || []).includes(time) : false;
+                  
                   return (
                     <motion.button
                       key={time}
-                      className={`btn btn-secondary booking-time-slot ${isSelected ? 'selected-time' : ''}`}
-                      whileHover={!isSelected ? { 
+                      className={`btn btn-secondary booking-time-slot ${isSelected ? 'selected-time' : ''} ${isBooked ? 'booked-time' : ''}`}
+                      disabled={isBooked}
+                      whileHover={!isSelected && !isBooked ? { 
                         scale: 1.05,
                         background: 'var(--primary-rose)',
                         color: 'var(--text-white)',
                         borderColor: 'var(--primary-rose)'
                       } : {}}
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={!isBooked ? { scale: 0.98 } : {}}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      onClick={() => setSelectedTime(time)}
+                      onClick={() => {
+                        if (!isBooked) {
+                          setSelectedTime(time);
+                        }
+                      }}
+                      title={isBooked ? 'Это время уже занято' : ''}
                     >
                       {time}
+                      {isBooked && <span className="booking-time-slot__booked-icon">✕</span>}
                     </motion.button>
                   );
                 })}

@@ -207,6 +207,33 @@
     background: var(--primary-gold);
     border-radius: 50%;
   }
+  
+  &.has-bookings {
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 3px;
+      background: var(--primary-gold);
+      border-radius: 2px;
+    }
+  }
+  
+  &__bookings-marker {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background: var(--primary-gold);
+    border-radius: 2px;
+  }
 }
 
 .calendar-legend {
@@ -296,6 +323,30 @@
 
 .booking-time-slot {
   padding: 1rem 1.5rem; // Увеличено
+  position: relative;
+  
+  &.booked-time {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--surface-secondary) !important;
+    border-color: var(--border-light) !important;
+    color: var(--text-secondary) !important;
+    
+    &:hover {
+      transform: none !important;
+      scale: 1 !important;
+    }
+  }
+  
+  &__booked-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 0.9rem;
+    color: var(--text-error, #dc3545);
+    font-weight: bold;
+    line-height: 1;
+  }
   font-size: 1.1rem; // Увеличено
   font-weight: 600; // Увеличено
   min-width: auto;
