@@ -18,24 +18,62 @@ const Booking: React.FC = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const generateWorkingDays = useMemo(() => {
-    const workingDays = new Set<string>();
-    let currentDate = new Date(2024, 6, 8);
+  // Функция определения рабочих дней согласно новому расписанию
+  const isWorkingDay = (date: Date): boolean => {
+    const year = date.getFullYear();
+    const month = date.getMonth(); // 0-11 (0 = январь, 11 = декабрь)
+    const day = date.getDate();
     
-    for (let i = 0; i < 365 * 2; i++) {
-      const dayKey = format(currentDate, 'yyyy-MM-dd');
-      const daysSinceStart = Math.round((currentDate.getTime() - new Date(2024, 6, 8).getTime()) / (1000 * 60 * 60 * 24));
-      if (daysSinceStart % 4 < 2) {
-        workingDays.add(dayKey);
-      }
-      currentDate = addDays(currentDate, 1);
+    // Декабрь 2024: 3-4, 7-8, 11-12, 15-16, 19-20, 23-24, 27-28 (31 не работаем)
+    if (year === 2024 && month === 11) { // декабрь = 11
+      const decemberWorkingDays = [3, 4, 7, 8, 11, 12, 15, 16, 19, 20, 23, 24, 27, 28];
+      return decemberWorkingDays.includes(day);
     }
     
-    return workingDays;
-  }, []);
-
-  const isWorkingDay = (date: Date) => {
-    return generateWorkingDays.has(format(date, 'yyyy-MM-dd'));
+    // Январь 2025: 9, 12-13, 16-17, 20-21, 24-25, 28-29...
+    if (year === 2025 && month === 0) { // январь = 0
+      if (day === 9) return true; // Первый рабочий день 9 января
+      // Паттерн: пары дней начиная с 12-13, затем каждые 4 дня новая пара
+      if (day >= 12) {
+        const daysFrom12 = day - 12;
+        const cycleDay = daysFrom12 % 4;
+        // В паре: 0 и 1 день цикла (12-13, 16-17, 20-21, 24-25, 28-29...)
+        return cycleDay === 0 || cycleDay === 1;
+      }
+      return false;
+    }
+    
+    // Для будущих месяцев применяем паттерн от последнего рабочего дня января
+    // Последний рабочий день января - 31, следующий цикл начинается с 4 февраля
+    if (year === 2025 && month >= 1) {
+      // Используем 31 января 2025 как последний рабочий день
+      const lastJanWorkDay = new Date(2025, 0, 31);
+      const daysDiff = Math.round((date.getTime() - lastJanWorkDay.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Первые 3 дня после 31 января - выходные, затем цикл 4 дня
+      if (daysDiff >= 4) {
+        const adjustedDays = daysDiff - 4; // Смещаем на начало следующего цикла
+        const cycleDay = adjustedDays % 4;
+        return cycleDay < 2; // Первые 2 дня цикла - рабочие
+      }
+      return false;
+    }
+    
+    // Для лет после 2025 продолжаем паттерн
+    if (year > 2025) {
+      // Используем 31 января 2025 как точку отсчета
+      const referenceDate = new Date(2025, 0, 31);
+      const daysDiff = Math.round((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff >= 4) {
+        const adjustedDays = daysDiff - 4;
+        const cycleDay = adjustedDays % 4;
+        return cycleDay < 2;
+      }
+      return false;
+    }
+    
+    return false;
   };
 
   const monthStart = startOfMonth(currentMonth);
