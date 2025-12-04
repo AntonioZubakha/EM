@@ -23,12 +23,19 @@
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .portfolio-swiper {
   width: 100%;
+  max-width: 100%;
   padding: 2rem 0 4rem;
   position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .portfolio-slide {

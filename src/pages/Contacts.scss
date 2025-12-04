@@ -26,13 +26,16 @@
 .contacts-card {
   &__facade {
     width: 100%;
+    max-width: 100%;
     margin-bottom: 2rem;
     border-radius: var(--radius-md);
     overflow: hidden;
     box-shadow: var(--shadow-soft);
+    box-sizing: border-box;
     
     &-image {
       width: 100%;
+      max-width: 100%;
       height: auto;
       display: block;
       object-fit: cover;

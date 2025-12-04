@@ -109,6 +109,8 @@
 html {
   scroll-behavior: smooth;
   font-size: 18px; // Увеличено с 16px
+  overflow-x: hidden;
+  max-width: 100vw;
   
   @media (max-width: 768px) {
     font-size: 16px; // Увеличено с 14px
@@ -412,6 +414,10 @@ p {
   min-height: 100vh;
   padding: 6rem 0;
   position: relative;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
   
   &:nth-child(even) {
     background: var(--gradient-elegant);
@@ -442,9 +448,12 @@ p {
   margin: 0 auto;
   padding: 0 2rem;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
   
   @media (max-width: 768px) {
     padding: 0 1rem;
+    max-width: 100vw;
   }
 }
 
