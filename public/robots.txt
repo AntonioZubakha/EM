@@ -1,0 +1,14 @@
+# robots.txt для elena-manicure.ru
+
+User-agent: *
+Allow: /
+
+# Запрещаем индексацию служебных файлов
+Disallow: /node_modules/
+Disallow: /*.json$
+Disallow: /src/
+
+# Sitemap
+Sitemap: https://elena-manicure.ru/sitemap.xml
+
+

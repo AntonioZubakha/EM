@@ -1,0 +1,808 @@
+// Роскошная страница прейскуранта с элегантными карточками
+
+.pricelist-section {
+  position: relative;
+  
+  // Элегантный фоновый эффект
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 30% 20%, rgba(232, 180, 184, 0.04) 0%, transparent 70%),
+      radial-gradient(circle at 70% 80%, rgba(212, 165, 116, 0.04) 0%, transparent 70%),
+      radial-gradient(circle at 10% 60%, rgba(168, 181, 160, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  // Плавающие геометрические элементы
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 15% 25%, rgba(232, 180, 184, 0.08) 2px, transparent 2px),
+      radial-gradient(circle at 85% 75%, rgba(212, 165, 116, 0.06) 1px, transparent 1px);
+    background-size: 80px 80px, 120px 120px;
+    animation: float 20s ease-in-out infinite;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+// Роскошные переключатели категорий
+.pricelist-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5rem;
+  position: relative;
+
+  &__container {
+    background: var(--surface-primary);
+    border-radius: var(--radius-2xl);
+    padding: 1rem;
+    border: 2px solid var(--border-gold);
+    box-shadow: var(--shadow-luxury);
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(15px);
+    
+    // Декоративная верхняя полоса
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gold);
+      z-index: 1;
+    }
+    
+    // Светящийся эффект
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120%;
+      height: 120%;
+      background: var(--gradient-elegant);
+      border-radius: inherit;
+      opacity: 0.1;
+      z-index: 0;
+    }
+  }
+
+  &__button {
+    background: transparent;
+    color: var(--text-primary); // Более контрастный
+    border: none;
+    padding: 1.7rem 3.5rem; // Увеличено
+    border-radius: var(--radius-xl);
+    font-size: 1.3rem; // Увеличено
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-luxury);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; // Увеличено
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+      transition: var(--transition-medium);
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 80%;
+      height: 3px;
+      background: var(--gradient-gold);
+      border-radius: 2px;
+      transition: var(--transition-medium);
+    }
+
+    &.active {
+      background: var(--primary-rose);
+      color: var(--text-white);
+      box-shadow: var(--shadow-medium);
+      transform: translateY(-3px);
+      
+      &::after {
+        transform: translateX(-50%) scaleX(1);
+        background: rgba(255, 255, 255, 0.6);
+      }
+    }
+    
+    &:hover:not(.active) {
+      color: var(--accent-burgundy);
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.5);
+      
+      &::before {
+        left: 100%;
+      }
+      
+      &::after {
+        transform: translateX(-50%) scaleX(1);
+      }
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    
+    svg {
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+  }
+}
+
+// Элегантные карточки услуг
+.price-item {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-strong); // Более заметная тень
+  transition: var(--transition-luxury);
+  backdrop-filter: blur(10px);
+  border: 2px solid var(--border-strong); // Более толстая и заметная рамка
+  
+  // Градиентная полоса сверху
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    transform: scaleX(0);
+    transition: var(--transition-medium);
+    z-index: 1;
+  }
+
+  // Декоративный элемент
+  &__decoration {
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    opacity: 0.1;
+    transition: var(--transition-luxury);
+    z-index: 0;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent,
+        rgba(255, 255, 255, 0.2) 30%,
+        transparent 60%,
+        rgba(255, 255, 255, 0.1) 90%,
+        transparent
+      );
+      animation: rotate 25s linear infinite;
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 30px;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: pulse 5s ease-in-out infinite;
+    }
+  }
+  
+  &--manicure {
+    &::before {
+      background: var(--gradient-rose);
+    }
+    
+    .price-item__decoration {
+      background: var(--gradient-rose);
+      
+      &::after {
+        background: var(--primary-rose);
+      }
+    }
+  }
+  
+  &--pedicure {
+    &::before {
+      background: var(--gradient-gold);
+    }
+    
+    .price-item__decoration {
+      background: var(--gradient-gold);
+      
+      &::after {
+        background: var(--primary-gold);
+      }
+    }
+  }
+
+  &:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: var(--shadow-glow);
+    
+    &::before {
+      transform: scaleX(1);
+    }
+    
+    &__decoration {
+      transform: scale(1.6) rotate(20deg);
+      opacity: 0.15;
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3rem;
+    padding: 3.5rem;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2.5rem;
+      padding: 2.5rem;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 2rem;
+      gap: 2rem;
+    }
+  }
+
+  &__details {
+    flex: 1;
+  }
+
+  &__name {
+    margin-bottom: 2rem; // Увеличено
+    font-size: clamp(1.8rem, 4.5vw, 2.4rem); // Увеличено
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    position: relative;
+    line-height: 1.3;
+    color: var(--text-primary) !important; // Четкий черный
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    background-clip: unset !important;
+  }
+  
+  &--manicure &__name {
+    background: var(--gradient-rose);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    
+  }
+
+  &--pedicure &__name {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    
+  }
+
+  &__description {
+    color: var(--text-primary); // Более контрастный
+    margin-bottom: 2.5rem;
+    font-size: 1.3rem; // Увеличено
+    line-height: 1.8;
+    font-weight: 500; // Увеличено
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--gradient-sage);
+      border-radius: 2px;
+      opacity: 0.3;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem; // Увеличено
+    color: var(--text-primary); // Более контрастный
+    font-size: 1.2rem; // Увеличено
+    font-weight: 700; // Увеличено
+    padding: 1.2rem 2rem; // Увеличено
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(5px);
+    border: 2px solid var(--border-strong); // Более толстая рамка
+
+    svg {
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+  }
+
+  &__price {
+    color: var(--text-white);
+    padding: 1.5rem 2.5rem; // Увеличено
+    border-radius: var(--radius-xl);
+    font-weight: 800;
+    font-size: 1.6rem; // Увеличено
+    transition: var(--transition-luxury);
+    box-shadow: var(--shadow-strong); // Более заметная тень
+    border: 3px solid rgba(255, 255, 255, 0.3); // Более заметная рамка
+    position: relative;
+    overflow: hidden;
+    font-family: 'Playfair Display', serif;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+      transition: var(--transition-medium);
+    }
+    
+    &::after {
+      display: none;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-glow);
+      
+      &::before {
+        left: 100%;
+      }
+    }
+  }
+  
+  &--manicure &__price {
+    background: var(--gradient-rose);
+  }
+  
+  &--pedicure &__price {
+    background: var(--gradient-gold);
+  }
+  
+  .btn {
+    min-width: 180px;
+    font-size: 1.1rem;
+    padding: 1.3rem 2.5rem;
+    font-weight: 700;
+    
+    @media (max-width: 600px) {
+      width: 100%;
+    }
+  }
+}
+
+// Информационные списки
+.info-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  vertical-align: middle;
+  box-shadow: 
+    0 3px 10px rgba(0, 0, 0, 0.2),
+    0 0 0 2px rgba(212, 175, 55, 0.4),
+    inset 0 1px 3px rgba(255, 255, 255, 0.9);
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-dark));
+    opacity: 0.2;
+    z-index: -1;
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  svg {
+    display: block;
+    filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.5));
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.05);
+  }
+}
+
+.info-list {
+  list-style: none;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.95);
+  
+  &__item {
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    font-size: 1.1rem;
+    transition: var(--transition-medium);
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    position: relative;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%) scaleX(0);
+      width: 3px;
+      height: 70%;
+      background: var(--primary-gold);
+      border-radius: 2px;
+      transition: var(--transition-medium);
+    }
+    
+    &:hover {
+      color: var(--text-white);
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(10px);
+      
+      &::before {
+        transform: translateY(-50%) scaleX(1);
+      }
+    }
+  }
+  
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      0 0 0 2px rgba(212, 175, 55, 0.3),
+      inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    position: relative;
+    transition: all 0.3s ease;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-gold), var(--primary-gold-dark));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+    
+    svg {
+      display: block;
+      filter: drop-shadow(0 1px 2px rgba(212, 175, 55, 0.4));
+    }
+  }
+  
+  // Эффект свечения иконки при наведении на элемент списка
+  &__item:hover &__icon {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.95));
+    box-shadow: 
+      0 4px 12px rgba(212, 175, 55, 0.4),
+      0 0 0 3px rgba(212, 175, 55, 0.2),
+      inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    transform: scale(1.1);
+    
+    &::before {
+      opacity: 0.3;
+    }
+    
+    svg {
+      filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.6));
+    }
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    
+    svg {
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    }
+  }
+}
+
+// Условия записи
+.terms-list {
+  list-style: none;
+  padding: 0;
+  color: var(--text-secondary);
+  
+  &__item {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    position: relative;
+    padding-left: 2rem;
+    
+    &::before {
+      content: '◆';
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--primary-rose);
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    strong {
+      color: var(--accent-burgundy);
+      font-weight: 700;
+      font-family: 'Playfair Display', serif;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    &:hover {
+      color: var(--text-primary);
+      transform: translateX(5px);
+      transition: var(--transition-medium);
+    }
+  }
+}
+
+// Анимации
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(2deg);
+  }
+}
+
+@keyframes rotate {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+// Адаптивность
+@media (max-width: 768px) {
+  .pricelist-toggle {
+    margin-bottom: 4rem;
+    
+    &__container {
+      padding: 0.8rem;
+      gap: 0.8rem;
+      flex-direction: column;
+      
+      @media (max-width: 480px) {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
+    
+    &__button {
+      padding: 1.2rem 2rem;
+      font-size: 1rem;
+      gap: 1rem;
+      
+      @media (max-width: 480px) {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+    
+    &__icon {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .price-item {
+    &__content {
+      padding: 2rem;
+    }
+    
+    &__name {
+      font-size: clamp(1.3rem, 4vw, 1.6rem);
+      margin-bottom: 1.2rem;
+    }
+    
+    &__description {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    &__meta {
+      gap: 1.5rem;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    &__meta-item {
+      justify-content: center;
+    }
+    
+    &__price {
+      font-size: 1.2rem;
+      padding: 1rem 1.5rem;
+      text-align: center;
+    }
+    
+    .btn {
+      font-size: 1rem;
+      padding: 1.2rem 2rem;
+    }
+  }
+  
+  .info-list {
+    &__item {
+      font-size: 1rem;
+      padding: 0.6rem 0.8rem;
+    }
+    
+    &__icon {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .terms-list {
+    &__item {
+      font-size: 1rem;
+      margin-bottom: 1.2rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .pricelist-toggle {
+    &__container {
+      padding: 0.6rem;
+      gap: 0.6rem;
+    }
+    
+    &__button {
+      padding: 1rem 1.5rem;
+      font-size: 0.95rem;
+      gap: 0.8rem;
+    }
+  }
+  
+  .price-item {
+    &__decoration {
+      width: 100px;
+      height: 100px;
+      top: -40px;
+      right: -40px;
+    }
+    
+    &__content {
+      padding: 1.5rem;
+    }
+    
+    &__meta {
+      gap: 1rem;
+    }
+    
+    &__meta-item {
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      
+      span {
+        font-size: 1.3rem;
+      }
+    }
+  }
+} 

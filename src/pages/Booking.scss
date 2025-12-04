@@ -1,0 +1,530 @@
+.booking-section {
+  position: relative;
+}
+
+.booking-intro {
+  font-size: 1.3rem; // Увеличено
+  color: var(--text-primary); // Более контрастный
+  margin-top: 1.5rem; // Увеличено
+  max-width: 700px; // Увеличено
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 500; // Увеличено
+}
+
+// Верхняя секция: Календарь и слоты времени
+.booking-top-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  align-items: start;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.booking-top-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 500px; // Минимальная высота для одинаковых боксов
+    
+    @media (max-width: 768px) {
+      min-height: auto;
+    }
+  }
+}
+
+// Нижняя секция: Форма и контакты
+.booking-bottom-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  align-items: start;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.booking-bottom-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 600px; // Минимальная высота для одинаковых боксов
+    
+    @media (max-width: 768px) {
+      min-height: auto;
+    }
+  }
+}
+
+.booking-conditions-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  
+  &__nav-btn {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border-light);
+    background: var(--surface-primary);
+    border-radius: var(--radius-md);
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+      border-color: var(--primary-rose);
+      background: var(--primary-rose);
+      color: var(--text-white);
+    }
+  }
+  
+  &__title {
+    font-size: 1.6rem; // Увеличено
+    font-weight: 700; // Увеличено
+    color: var(--text-primary);
+    margin: 0;
+    text-transform: capitalize;
+  }
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  
+  &__day {
+    text-align: center;
+    font-weight: 700; // Увеличено
+    font-size: 1.1rem; // Увеличено
+    color: var(--text-primary); // Более контрастный
+    padding: 0.7rem; // Увеличено
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border: 3px solid var(--border-strong); // Более толстая рамка
+  background: var(--surface-primary);
+  border-radius: var(--radius-md);
+  font-size: 1.1rem; // Увеличено
+  font-weight: 600; // Увеличено
+  color: var(--text-primary); // Более контрастный
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &.work-day {
+    background: var(--gradient-soft);
+    border-color: var(--primary-rose-dark); // Более насыщенный
+    color: var(--text-primary);
+    
+    &:hover:not(:disabled) {
+      background: var(--primary-rose-dark); // Более насыщенный
+      color: var(--text-white);
+      transform: scale(1.05);
+    }
+  }
+  
+  &.selected-day {
+    background: var(--primary-rose-dark); // Более насыщенный
+    color: var(--text-white);
+    border-color: var(--primary-gold-dark); // Более насыщенный
+    border-width: 3px; // Более толстая рамка
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.4); // Более заметная тень
+  }
+  
+  &.past-day {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+  }
+  
+  &.empty {
+    border: none;
+    background: transparent;
+    cursor: default;
+  }
+  
+  &__today-marker {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background: var(--primary-gold);
+    border-radius: 50%;
+  }
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+  
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+  
+  &__color-box {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--surface-primary);
+    
+    &.work-day {
+      background: var(--gradient-soft);
+      border-color: var(--primary-rose);
+    }
+  }
+}
+
+.booking-hours {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  
+  &__title {
+    font-size: 1.5rem; // Увеличено
+    font-weight: 700; // Увеличено
+    color: var(--text-primary); // Более контрастный
+    margin-bottom: 1rem; // Увеличено
+  }
+  
+  &__time {
+    font-size: 2rem; // Увеличено
+    font-weight: 700;
+    color: var(--primary-rose-dark); // Более насыщенный
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 0.8rem; // Увеличено
+  }
+  
+  &__hint {
+    font-size: 1.1rem; // Увеличено
+    color: var(--text-primary); // Более контрастный
+    margin: 0;
+    margin-top: 0.8rem; // Увеличено
+    font-weight: 500; // Увеличено
+  }
+}
+
+.booking-time-slots {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  
+  &__title {
+    font-size: 1.4rem; // Увеличено
+    font-weight: 700; // Увеличено
+    color: var(--text-primary);
+    margin-bottom: 2rem; // Увеличено
+    text-align: center;
+  }
+  
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    flex: 1;
+    
+    @media (max-width: 600px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+.booking-time-slot {
+  padding: 1rem 1.5rem; // Увеличено
+  font-size: 1.1rem; // Увеличено
+  font-weight: 600; // Увеличено
+  min-width: auto;
+  transition: all 0.3s ease;
+  border: 2px solid var(--border-strong); // Более заметная рамка
+  
+  &.selected-time {
+    background: var(--primary-rose-dark) !important; // Более насыщенный
+    color: var(--text-white) !important;
+    border-color: var(--primary-gold-dark) !important; // Более насыщенный
+    border-width: 3px !important; // Более толстая рамка
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.4); // Более заметная тень
+    transform: scale(1.05);
+    
+    &:hover {
+      background: #C08A9B !important; // Еще более темный
+      transform: scale(1.08);
+    }
+  }
+}
+
+// Правая колонка
+.booking-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.booking-contacts {
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--gradient-soft);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: var(--primary-rose);
+      transform: translateX(5px);
+      
+      .booking-contacts__label,
+      .booking-contacts__value {
+        color: var(--text-white);
+      }
+    }
+  }
+  
+  &__label {
+    font-size: 1rem; // Увеличено
+    font-weight: 700; // Увеличено
+    color: var(--text-primary); // Более контрастный
+    margin-bottom: 0.5rem; // Увеличено
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  &__value {
+    font-size: 1.2rem; // Увеличено
+    color: var(--text-primary);
+    line-height: 1.5; // Увеличено
+    font-weight: 500; // Увеличено
+  }
+  
+  &__buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.booking-form-card {
+  .card-title {
+    margin-bottom: 2rem; // Увеличено
+    font-size: 1.8rem !important; // Увеличено
+    font-weight: 700 !important; // Увеличено
+  }
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-selected-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; // Увеличено
+  padding: 1.5rem; // Увеличено
+  background: var(--gradient-soft);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem; // Увеличено
+  border: 2px solid var(--border-strong); // Более заметная рамка
+  
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 1rem; // Увеличено
+    font-size: 1.15rem; // Увеличено
+    color: var(--text-primary);
+    font-weight: 500; // Увеличено
+    
+    svg {
+      flex-shrink: 0;
+      width: 24px; // Увеличено
+      height: 24px; // Увеличено
+    }
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 1.3rem; // Увеличено
+  border: 3px solid var(--border-strong); // Более толстая и заметная рамка
+  border-radius: var(--radius-md);
+  font-size: 1.15rem; // Увеличено
+  font-weight: 500; // Увеличено
+  font-family: 'Open Sans', sans-serif;
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--primary-rose-dark); // Более насыщенный
+    border-width: 3px;
+    box-shadow: 0 0 0 4px rgba(232, 183, 200, 0.3); // Более заметная тень
+  }
+  
+  &::placeholder {
+    color: var(--text-tertiary); // Более контрастный
+    font-size: 1.1rem; // Увеличено
+  }
+}
+
+.form-success-message {
+  text-align: center;
+  padding: 3rem; // Увеличено
+  
+  &__icon {
+    margin-bottom: 1.5rem; // Увеличено
+    display: flex;
+    justify-content: center;
+  }
+  
+  &__title {
+    font-size: 1.8rem; // Увеличено
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem; // Увеличено
+  }
+  
+  p {
+    color: var(--text-primary); // Более контрастный
+    margin: 0;
+    font-size: 1.2rem; // Увеличено
+    font-weight: 500; // Увеличено
+  }
+}
+
+.booking-conditions {
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem; // Увеличено
+    padding: 1.5rem; // Увеличено
+    background: var(--gradient-soft);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-medium); // Более заметная рамка
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: var(--primary-rose);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+      
+      .booking-conditions__label,
+      .booking-conditions__value {
+        color: var(--text-white);
+      }
+    }
+  }
+  
+  &__icon {
+    width: 40px; // Увеличено
+    height: 40px; // Увеличено
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 
+      0 3px 12px rgba(0, 0, 0, 0.2), // Более заметная тень
+      0 0 0 3px rgba(212, 175, 55, 0.4); // Более заметная рамка
+    
+    svg {
+      display: block;
+    }
+  }
+  
+  &__content {
+    flex: 1;
+  }
+  
+  &__label {
+    font-size: 1.1rem; // Увеличено
+    font-weight: 700; // Увеличено
+    color: var(--text-primary); // Более контрастный
+    margin-bottom: 0.7rem; // Увеличено
+  }
+  
+  &__value {
+    font-size: 1.25rem; // Увеличено
+    color: var(--text-primary);
+    line-height: 1.5; // Увеличено
+    font-weight: 500; // Увеличено
+  }
+}
+
