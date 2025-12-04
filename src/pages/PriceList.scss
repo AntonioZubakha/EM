@@ -681,6 +681,132 @@
   }
 }
 
+// Таблица прейскуранта
+.price-table-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.price-table-card {
+  overflow-x: auto;
+  padding: 0;
+  border-radius: var(--radius-xl);
+}
+
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.1rem;
+  background: var(--surface-primary);
+  min-width: 800px;
+  
+  thead {
+    background: var(--gradient-primary);
+  }
+  
+  &__header {
+    background: var(--gradient-primary);
+    color: var(--text-white);
+    font-weight: 700;
+    padding: 1.5rem 1.2rem;
+    text-align: left;
+    font-size: 1.2rem;
+    border-bottom: 3px solid var(--primary-rose-dark);
+    white-space: nowrap;
+    
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &--service {
+      min-width: 200px;
+      width: 25%;
+    }
+    
+    &--description {
+      min-width: 300px;
+      width: 35%;
+    }
+    
+    &--duration {
+      min-width: 120px;
+      width: 15%;
+    }
+    
+    &--price {
+      min-width: 140px;
+      width: 15%;
+      text-align: center;
+    }
+    
+    &--action {
+      min-width: 150px;
+      width: 10%;
+      text-align: center;
+    }
+  }
+  
+  &__row {
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: var(--gradient-soft);
+    }
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  &__cell {
+    padding: 1.5rem 1.2rem;
+    vertical-align: middle;
+    
+    &--service {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      width: 25%;
+    }
+    
+    &--description {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      width: 35%;
+    }
+    
+    &--duration {
+      color: var(--text-secondary);
+      font-weight: 500;
+      width: 15%;
+    }
+    
+    &--price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-rose-dark);
+      text-align: center;
+      width: 15%;
+    }
+    
+    &--action {
+      text-align: center;
+      width: 10%;
+    }
+    
+    strong {
+      color: var(--text-primary);
+    }
+  }
+}
+
+.btn-sm {
+  padding: 0.8rem 1.5rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
 // Адаптивность
 @media (max-width: 768px) {
   .pricelist-toggle {
@@ -713,41 +839,73 @@
     }
   }
   
-  .price-item {
-    &__content {
-      padding: 2rem;
+  .price-table {
+    font-size: 1rem;
+    display: block;
+    overflow-x: auto;
+    
+    thead,
+    tbody,
+    tr {
+      display: block;
     }
     
-    &__name {
-      font-size: clamp(1.3rem, 4vw, 1.6rem);
-      margin-bottom: 1.2rem;
+    &__header {
+      padding: 1.2rem 1rem;
+      font-size: 1.1rem;
+      
+      &--service {
+        width: 25%;
+      }
+      
+      &--description {
+        width: 35%;
+      }
+      
+      &--duration {
+        width: 15%;
+      }
+      
+      &--price {
+        width: 15%;
+      }
+      
+      &--action {
+        width: 10%;
+      }
     }
     
-    &__description {
-      font-size: 1rem;
-      margin-bottom: 2rem;
+    &__cell {
+      padding: 1.2rem 1rem;
+      font-size: 0.95rem;
+      
+      &--service {
+        font-size: 1.05rem;
+        width: 25%;
+      }
+      
+      &--description {
+        width: 35%;
+      }
+      
+      &--duration {
+        width: 15%;
+      }
+      
+      &--price {
+        font-size: 1.15rem;
+        width: 15%;
+      }
+      
+      &--action {
+        width: 10%;
+      }
     }
-    
-    &__meta {
-      gap: 1.5rem;
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    &__meta-item {
-      justify-content: center;
-    }
-    
-    &__price {
-      font-size: 1.2rem;
-      padding: 1rem 1.5rem;
-      text-align: center;
-    }
-    
-    .btn {
-      font-size: 1rem;
-      padding: 1.2rem 2rem;
-    }
+  }
+  
+  .btn-sm {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
   }
   
   .info-list {
@@ -783,29 +941,67 @@
     }
   }
   
-  .price-item {
-    &__decoration {
-      width: 100px;
-      height: 100px;
-      top: -40px;
-      right: -40px;
-    }
+  .price-table {
+    font-size: 0.9rem;
     
-    &__content {
-      padding: 1.5rem;
-    }
-    
-    &__meta {
-      gap: 1rem;
-    }
-    
-    &__meta-item {
-      padding: 0.6rem 1rem;
+    &__header {
+      padding: 1rem 0.8rem;
       font-size: 1rem;
+      flex-direction: column;
+      gap: 0.3rem;
       
-      span {
-        font-size: 1.3rem;
+      &--service {
+        min-width: 120px;
+      }
+      
+      &--description {
+        min-width: 180px;
+      }
+      
+      &--duration {
+        min-width: 90px;
+      }
+      
+      &--price {
+        min-width: 110px;
+      }
+      
+      &--action {
+        min-width: 120px;
       }
     }
+    
+    &__cell {
+      padding: 1rem 0.8rem;
+      font-size: 0.85rem;
+      
+      &--service {
+        font-size: 0.95rem;
+        min-width: 120px;
+      }
+      
+      &--description {
+        min-width: 180px;
+        font-size: 0.85rem;
+      }
+      
+      &--duration {
+        min-width: 90px;
+      }
+      
+      &--price {
+        font-size: 1rem;
+        min-width: 110px;
+      }
+      
+      &--action {
+        min-width: 120px;
+      }
+    }
+  }
+  
+  .btn-sm {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
   }
 } 

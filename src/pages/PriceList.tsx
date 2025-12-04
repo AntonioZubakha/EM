@@ -53,64 +53,71 @@ const PriceList: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Список услуг */}
+      {/* Таблица услуг */}
       <motion.div
         key={activeCategory}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="grid grid-1"
-        style={{ gap: '2rem', maxWidth: '1000px', margin: '0 auto' }}
+        className="price-table-wrapper"
       >
-        {pricelistData[activeCategory].map((service, index) => (
-          <motion.div
-            key={service.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            viewport={{ once: true }}
-            className={`price-item price-item--${activeCategory}`}
-          >
-            <div className="price-item__decoration" />
-            
-            <div className="price-item__content">
-              <div className="price-item__details">
-                <h3 className="price-item__name">
-                  {service.name}
-                </h3>
-                
-                <p className="price-item__description">
-                  {service.description}
-                </p>
-                
-                <div className="price-item__meta">
-                  <div className="price-item__meta-item">
-                    <ClockIcon size={20} color="var(--primary-rose)" />
+        <div className="card price-table-card">
+          <table className="price-table">
+            <thead>
+              <tr>
+                <th className="price-table__header price-table__header--service">Услуга</th>
+                <th className="price-table__header price-table__header--description">Описание</th>
+                <th className="price-table__header price-table__header--duration">
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <ClockIcon size={18} color="currentColor" />
+                    Время
+                  </span>
+                </th>
+                <th className="price-table__header price-table__header--price">Цена</th>
+                <th className="price-table__header price-table__header--action"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {pricelistData[activeCategory].map((service, index) => (
+                <motion.tr
+                  key={service.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="price-table__row"
+                >
+                  <td className="price-table__cell price-table__cell--service">
+                    <strong>{service.name}</strong>
+                  </td>
+                  <td className="price-table__cell price-table__cell--description">
+                    {service.description}
+                  </td>
+                  <td className="price-table__cell price-table__cell--duration">
                     {service.duration}
-                  </div>
-                  
-                  <div className="price-item__price">
-                    {service.price}
-                  </div>
-                </div>
-              </div>
-              
-              <motion.button
-                className="btn btn-primary"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const bookingElement = document.getElementById('booking');
-                  if (bookingElement) {
-                    bookingElement.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-              >
-                Записаться
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
+                  </td>
+                  <td className="price-table__cell price-table__cell--price">
+                    <strong>{service.price}</strong>
+                  </td>
+                  <td className="price-table__cell price-table__cell--action">
+                    <motion.button
+                      className="btn btn-primary btn-sm"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        const bookingElement = document.getElementById('booking');
+                        if (bookingElement) {
+                          bookingElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                    >
+                      Записаться
+                    </motion.button>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </motion.div>
 
       {/* Дополнительная информация */}
