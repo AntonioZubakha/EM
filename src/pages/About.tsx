@@ -4,6 +4,23 @@ import aboutData from '../data/about.json';
 import './About.scss';
 
 const About: React.FC = () => {
+  // Функция для правильного склонения слова "год"
+  const getYearWord = (years: number): string => {
+    const lastDigit = years % 10;
+    const lastTwoDigits = years % 100;
+    
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      return 'лет';
+    }
+    if (lastDigit === 1) {
+      return 'год';
+    }
+    if (lastDigit >= 2 && lastDigit <= 4) {
+      return 'года';
+    }
+    return 'лет';
+  };
+
   return (
     <div className="container about-section">
       <motion.div
@@ -56,7 +73,7 @@ const About: React.FC = () => {
         >
           <h2 className="about-name">{aboutData.name}</h2>
           <div className="experience-badge">
-            Опыт работы: {aboutData.experience} лет
+            Опыт работы: {aboutData.experience} {getYearWord(aboutData.experience)}
           </div>
           <div className="card card--highlight mb-4">
             <p>{aboutData.description}</p>
