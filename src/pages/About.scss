@@ -53,6 +53,7 @@
     box-shadow: var(--shadow-luxury);
     background: var(--gradient-primary);
     position: relative;
+    display: block;
     
     @media (max-width: 768px) {
       max-width: 350px;
@@ -63,93 +64,26 @@
     }
   }
   
-  &__pulse-container {
-    width: 420px;
-    height: 560px;
-    margin: 0 auto 3rem;
-    border-radius: var(--radius-2xl);
-    background: var(--gradient-luxury);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-luxury);
-    position: relative;
-    overflow: hidden;
-    
-    // Вращающийся ореол
-    &::before {
-      content: '';
-      position: absolute;
-      top: -10%;
-      left: -10%;
-      width: 120%;
-      height: 120%;
-      background: conic-gradient(
-        from 0deg,
-        transparent,
-        rgba(232, 180, 184, 0.3) 10%,
-        transparent 20%,
-        rgba(212, 165, 116, 0.2) 30%,
-        transparent 40%,
-        rgba(168, 181, 160, 0.25) 50%,
-        transparent 60%,
-        rgba(184, 169, 201, 0.2) 70%,
-        transparent 80%,
-        rgba(232, 180, 184, 0.3) 90%,
-        transparent
-      );
-      animation: rotate 25s linear infinite;
-      border-radius: inherit;
-    }
-    
-    // Внутренний градиентный слой
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 4px;
-      background: var(--gradient-primary);
-      border-radius: calc(var(--radius-2xl) - 4px);
-      z-index: 1;
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-    
-    @media (max-width: 768px) {
-      width: 350px;
-      height: 480px;
-    }
-    
-    @media (max-width: 480px) {
-      width: 300px;
-      height: 400px;
-    }
-  }
-  
-  &__image-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--primary-cream);
-    border-radius: calc(var(--radius-2xl) - 8px);
-    width: calc(100% - 16px);
-    height: calc(100% - 16px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    z-index: 2;
-    box-shadow: var(--shadow-medium);
-    border: 3px solid rgba(255, 255, 255, 0.8);
-  }
   
   &__image {
     width: 100%;
-    height: 100%;
+    height: auto;
+    display: block;
     object-fit: cover;
     transition: var(--transition-luxury);
+    border-radius: var(--radius-2xl);
+    min-height: 200px;
+    
+    @media (max-width: 768px) {
+      min-height: 300px;
+    }
+    
+    @media (max-width: 480px) {
+      min-height: 250px;
+    }
     
     &:hover {
-      transform: scale(1.05);
+      transform: scale(1.02);
     }
   }
 }
