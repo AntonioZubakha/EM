@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isBefore, startOfDay, getDay } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isBefore, startOfDay, getDay, addDays } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import servicesData from '../data/services.json';
 import { LocationIcon, PhoneIcon, SuccessIcon, CheckIcon, ClockIcon, CardIcon, GiftIcon, CalendarIcon } from '../components/Icons';
@@ -85,7 +85,10 @@ const Booking: React.FC = () => {
 
   daysInMonth.forEach((day) => {
     const isWorking = isWorkingDay(day);
-    const isPast = isBefore(day, startOfDay(new Date()));
+    // Блокируем только сегодня и прошедшие дни
+    // Можно записаться минимум на завтра (согласно правилу "за 1-2 дня до процедуры")
+    const tomorrow = startOfDay(addDays(new Date(), 1));
+    const isPast = isBefore(day, tomorrow);
     const isSelected = selectedDate && isSameDay(day, selectedDate);
     const isCurrentToday = isToday(day);
 
