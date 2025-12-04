@@ -21,6 +21,7 @@ const Cabinet: React.FC = () => {
     { img: '/5427244503883969652.jpg', alt: 'Оборудование и стерилизация' },
     { img: '/5429213501576052044.jpg', alt: 'Продукция CND Shellac' },
     { img: '/5429471586160868689.jpg', alt: 'Рабочее место мастера' },
+    { img: '/5300909892006776642.jpg', alt: 'Кабинет мастера' },
   ];
 
   const handleImageError = (index: number) => {
