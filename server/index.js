@@ -226,7 +226,6 @@ app.post('/api/booked-slots', async (req, res) => {
     const slots = await loadBookedSlots();
     
     // Вычисляем слоты (каждый слот = 30 минут)
-    const duration = durationMinutes || 30; // По умолчанию 30 минут (1 слот)
     const slotsToBook = getNextTimeSlots(time, duration);
     
     // Проверяем, не заняты ли все необходимые слоты
