@@ -142,9 +142,17 @@ const Booking: React.FC = () => {
     );
   });
 
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
-  ];
+  // Генерируем получасовые слоты с 09:00 до 21:00
+  const timeSlots = React.useMemo(() => {
+    const slots: string[] = [];
+    for (let hour = 9; hour <= 21; hour++) {
+      slots.push(`${String(hour).padStart(2, '0')}:00`);
+      if (hour < 21) { // 21:30 не добавляем, так как рабочий день до 21:00
+        slots.push(`${String(hour).padStart(2, '0')}:30`);
+      }
+    }
+    return slots;
+  }, []);
 
   // Сбрасываем выбранное время, если оно стало занятым при изменении даты
   useEffect(() => {
@@ -276,8 +284,9 @@ const Booking: React.FC = () => {
     e.preventDefault();
     
     // Проверяем, что выбранные дата и время не заняты
-    if (selectedDate && selectedTime) {
-      const isBooked = await isSlotBooked(selectedDate, selectedTime);
+    if (selectedDate && selectedTime && formData.services.length > 0) {
+      const totalDuration = calculateTotalDuration(formData.services);
+      const isBooked = await isSlotBooked(selectedDate, selectedTime, totalDuration);
       if (isBooked) {
         alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
         setSelectedTime('');
@@ -326,9 +335,10 @@ const Booking: React.FC = () => {
       );
       if (!booked) {
         // Если не удалось забронировать (например, уже занято), показываем ошибку
-        const hours = totalDuration > 0 ? Math.ceil(totalDuration / 60) : 1;
-        if (hours > 1) {
-          alert(`К сожалению, не все необходимые слоты доступны (требуется ${hours} ${hours === 2 || hours === 3 || hours === 4 ? 'часа' : 'часов'}). Пожалуйста, выберите другое время.`);
+        const numberOfSlots = totalDuration > 0 ? Math.ceil(totalDuration / 30) : 1;
+        if (numberOfSlots > 1) {
+          const durationText = formatDuration(totalDuration);
+          alert(`К сожалению, не все необходимые слоты доступны (требуется ${durationText}). Пожалуйста, выберите другое время.`);
         } else {
           alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
         }
@@ -521,11 +531,12 @@ const Booking: React.FC = () => {
                   let isBlockedBySelection = false;
                   if (isSelected && formData.services.length > 0) {
                     const totalDuration = calculateTotalDuration(formData.services);
-                    const hours = totalDuration > 0 ? Math.ceil(totalDuration / 60) : 1;
+                    // Количество получасовых слотов (округление вверх)
+                    const numberOfSlots = totalDuration > 0 ? Math.ceil(totalDuration / 30) : 1;
                     const selectedIndex = timeSlots.indexOf(selectedTime);
                     const currentIndex = timeSlots.indexOf(time);
                     // Проверяем, попадает ли текущий слот в диапазон заблокированных слотов
-                    isBlockedBySelection = currentIndex >= selectedIndex && currentIndex < selectedIndex + hours;
+                    isBlockedBySelection = currentIndex >= selectedIndex && currentIndex < selectedIndex + numberOfSlots;
                   }
                   
                   const isDisabled = isBooked || (isBlockedBySelection && !isSelected);

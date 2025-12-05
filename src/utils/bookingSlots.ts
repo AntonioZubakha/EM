@@ -47,27 +47,62 @@ const refreshCache = async (): Promise<void> => {
 };
 
 /**
- * Проверить, занят ли слот
+ * Проверить, занят ли слот (или несколько слотов для длительной процедуры)
  */
-export const isSlotBooked = async (date: Date, time: string): Promise<boolean> => {
+export const isSlotBooked = async (date: Date, time: string, durationMinutes: number = 30): Promise<boolean> => {
   await refreshCache();
   const dateStr = formatDate(date);
   
-  return cachedSlots.some(slot => slot.date === dateStr && slot.time === time);
+  // Генерируем список всех получасовых слотов для проверки
+  const allTimeSlots: string[] = [];
+  for (let hour = 9; hour <= 21; hour++) {
+    allTimeSlots.push(`${String(hour).padStart(2, '0')}:00`);
+    if (hour < 21) {
+      allTimeSlots.push(`${String(hour).padStart(2, '0')}:30`);
+    }
+  }
+  
+  const startIndex = allTimeSlots.indexOf(time);
+  if (startIndex === -1) return true; // Invalid start time
+
+  const numberOfSlots = Math.ceil(durationMinutes / 30);
+
+  for (let i = 0; i < numberOfSlots; i++) {
+    if (startIndex + i >= allTimeSlots.length) return true; // Not enough slots
+    const currentSlotTime = allTimeSlots[startIndex + i];
+    if (cachedSlots.some(slot => slot.date === dateStr && slot.time === currentSlotTime)) {
+      return true; // One of the required slots is already booked
+    }
+  }
+  return false;
 };
 
 /**
- * Вычислить следующие слоты времени на основе начального времени и количества часов
+ * Вычислить следующие слоты времени на основе начального времени и длительности в минутах
+ * Слоты теперь получасовые (30 минут)
  */
-const getNextTimeSlots = (startTime: string, hours: number): string[] => {
+const getNextTimeSlots = (startTime: string, durationMinutes: number): string[] => {
   const slots: string[] = [];
   const [startHour, startMinute] = startTime.split(':').map(Number);
   
-  for (let i = 0; i < hours; i++) {
-    const hour = startHour + i;
-    if (hour > 21) break; // Максимальное время 21:00
-    const timeStr = `${String(hour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+  // Количество получасовых слотов (округление вверх)
+  const numberOfSlots = Math.ceil(durationMinutes / 30);
+  
+  // Начальное время в минутах от начала дня
+  let currentMinutes = startHour * 60 + startMinute;
+  
+  for (let i = 0; i < numberOfSlots; i++) {
+    const hour = Math.floor(currentMinutes / 60);
+    const minute = currentMinutes % 60;
+    
+    // Максимальное время 21:00
+    if (hour > 21 || (hour === 21 && minute > 0)) break;
+    
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
     slots.push(timeStr);
+    
+    // Переходим к следующему получасовому слоту
+    currentMinutes += 30;
   }
   
   return slots;
@@ -87,9 +122,9 @@ export const bookSlot = async (
   try {
     const dateStr = formatDate(date);
     
-    // Вычисляем количество слотов (каждый слот = 1 час)
-    const hours = durationMinutes ? Math.ceil(durationMinutes / 60) : 1;
-    const slotsToBook = getNextTimeSlots(time, hours);
+    // Вычисляем слоты (каждый слот = 30 минут)
+    const duration = durationMinutes || 30; // По умолчанию 30 минут (1 слот)
+    const slotsToBook = getNextTimeSlots(time, duration);
     
     // Проверяем, не заняты ли все необходимые слоты
     for (const slotTime of slotsToBook) {

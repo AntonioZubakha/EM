@@ -28,9 +28,17 @@ const Admin: React.FC = () => {
   const longPressTriggeredRef = useRef<boolean>(false);
   const [isLongPressing, setIsLongPressing] = useState(false);
 
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
-  ];
+  // Генерируем получасовые слоты с 09:00 до 21:00
+  const timeSlots = useMemo(() => {
+    const slots: string[] = [];
+    for (let hour = 9; hour <= 21; hour++) {
+      slots.push(`${String(hour).padStart(2, '0')}:00`);
+      if (hour < 21) { // 21:30 не добавляем, так как рабочий день до 21:00
+        slots.push(`${String(hour).padStart(2, '0')}:30`);
+      }
+    }
+    return slots;
+  }, []);
 
   // Генерируем список всех процедур из прайс-листа
   const allServices = useMemo(() => {

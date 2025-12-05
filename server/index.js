@@ -133,15 +133,28 @@ app.get('/api/booked-slots/:date', async (req, res) => {
 });
 
 // Функция для вычисления следующих слотов времени
-function getNextTimeSlots(startTime, hours) {
+function getNextTimeSlots(startTime, durationMinutes) {
   const slots = [];
   const [startHour, startMinute] = startTime.split(':').map(Number);
   
-  for (let i = 0; i < hours; i++) {
-    const hour = startHour + i;
-    if (hour > 21) break; // Максимальное время 21:00
-    const timeStr = `${String(hour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+  // Количество получасовых слотов (округление вверх)
+  const numberOfSlots = Math.ceil(durationMinutes / 30);
+  
+  // Начальное время в минутах от начала дня
+  let currentMinutes = startHour * 60 + startMinute;
+  
+  for (let i = 0; i < numberOfSlots; i++) {
+    const hour = Math.floor(currentMinutes / 60);
+    const minute = currentMinutes % 60;
+    
+    // Максимальное время 21:00
+    if (hour > 21 || (hour === 21 && minute > 0)) break;
+    
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
     slots.push(timeStr);
+    
+    // Переходим к следующему получасовому слоту
+    currentMinutes += 30;
   }
   
   return slots;
@@ -199,9 +212,9 @@ app.post('/api/booked-slots', async (req, res) => {
     
     const slots = await loadBookedSlots();
     
-    // Вычисляем количество слотов (каждый слот = 1 час)
-    const durationHours = durationMinutes ? Math.ceil(durationMinutes / 60) : 1;
-    const slotsToBook = getNextTimeSlots(time, durationHours);
+    // Вычисляем слоты (каждый слот = 30 минут)
+    const duration = durationMinutes || 30; // По умолчанию 30 минут (1 слот)
+    const slotsToBook = getNextTimeSlots(time, duration);
     
     // Проверяем, не заняты ли все необходимые слоты
     for (const slotTime of slotsToBook) {
