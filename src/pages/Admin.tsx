@@ -242,25 +242,35 @@ const Admin: React.FC = () => {
       <motion.button
         key={day.toString()}
         onClick={(e) => {
-          // Правый клик или Ctrl+клик - переключение статуса дня
-          if (e.ctrlKey || (e as any).button === 2) {
+          // Ctrl+клик или Cmd+клик (Mac) - переключение статуса дня
+          if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
+            e.stopPropagation();
             handleToggleDayStatus(day);
-          } else {
-            // Обычный клик - выбор дня (только для рабочих дней)
-            if (isWorking) {
-              setSelectedDate(day);
-            }
+            return;
+          }
+          // Обычный клик - выбор дня (только для рабочих дней)
+          if (isWorking) {
+            setSelectedDate(day);
           }
         }}
         onContextMenu={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           handleToggleDayStatus(day);
+        }}
+        onMouseDown={(e) => {
+          // Обработка правой кнопки мыши через mousedown
+          if (e.button === 2) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggleDayStatus(day);
+          }
         }}
         className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
         whileHover={isWorking ? { scale: 1.05 } : {}}
         whileTap={{ scale: 0.95 }}
-        disabled={!isWorking && !hasOverride}
+        style={{ cursor: isWorking ? 'pointer' : 'pointer' }}
         title={hasOverride 
           ? `${isWorking ? 'Рабочий' : 'Выходной'} (изменено). Ctrl+клик или ПКМ для изменения`
           : `${isWorking ? 'Рабочий день' : 'Выходной'}. Ctrl+клик или ПКМ для изменения`}

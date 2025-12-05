@@ -204,7 +204,7 @@
     border-color: #dc3545;
     color: #721c24;
     opacity: 0.6;
-    cursor: not-allowed;
+    cursor: pointer; // Разрешаем клики для изменения статуса
   }
 
   &.overridden {
@@ -230,13 +230,13 @@
     z-index: 1;
   }
 
-  &:hover:not(.empty):not(.off) {
+  &:hover:not(.empty) {
     border-color: var(--primary-rose);
     transform: scale(1.05);
   }
 
-  &:disabled {
-    cursor: not-allowed;
+  &.off {
+    cursor: pointer; // Разрешаем клики даже для выходных дней
   }
 
   &__override-icon {
