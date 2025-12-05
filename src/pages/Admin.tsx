@@ -4,6 +4,7 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import { ru } from 'date-fns/locale';
 import { getBookedSlotsForDate, releaseSlot } from '../utils/bookingSlots';
 import { isWorkingDayBase, setDayStatus, removeDayOverride, loadWorkingDaysOverrides } from '../utils/workingDays';
+import pricelistData from '../data/pricelist.json';
 import './Admin.scss';
 
 const ADMIN_LOGIN = 'ElenaK';
@@ -27,6 +28,23 @@ const Admin: React.FC = () => {
   const timeSlots = [
     '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
   ];
+
+  // Генерируем список всех процедур из прайс-листа
+  const allServices = useMemo(() => {
+    const serviceList: string[] = [];
+    
+    // Добавляем все услуги из категории "manicure"
+    pricelistData.manicure.forEach((service: { name: string }) => {
+      serviceList.push(service.name);
+    });
+    
+    // Добавляем все услуги из категории "pedicure"
+    pricelistData.pedicure.forEach((service: { name: string }) => {
+      serviceList.push(service.name);
+    });
+    
+    return serviceList;
+  }, []);
 
   // Проверка авторизации при загрузке
   useEffect(() => {
@@ -124,10 +142,23 @@ const Admin: React.FC = () => {
   };
 
   const handleToggleSlot = async (time: string) => {
-    if (!selectedDate) return;
+    console.log('handleToggleSlot вызвана для времени:', time);
+    if (!selectedDate) {
+      console.log('Нет выбранной даты');
+      return;
+    }
     
     if (bookedSlots.includes(time)) {
-      // Освобождаем слот
+      // Освобождаем слот с подтверждением
+      const slotInfo = bookedSlotsInfo[time];
+      const clientInfo = slotInfo?.name ? ` (${slotInfo.name}${slotInfo?.service ? ` - ${slotInfo.service}` : ''})` : '';
+      const confirmMessage = `Вы уверены, что хотите освободить слот ${time}${clientInfo}?`;
+      
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      console.log('Освобождаем слот:', time);
       setLoading(true);
       try {
         const success = await releaseSlot(selectedDate, time);
@@ -146,6 +177,7 @@ const Admin: React.FC = () => {
       }
     } else {
       // Показываем форму для ввода данных
+      console.log('Показываем форму для слота:', time);
       setSlotFormData({ time, name: '', service: '' });
       setShowSlotForm(true);
     }
@@ -505,14 +537,20 @@ const Admin: React.FC = () => {
                     <motion.div
                       key={time}
                       className="admin-slot-wrapper"
-                      whileHover={{ scale: 1.05 }}
                     >
                       <motion.button
-                        onClick={() => handleToggleSlot(time)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Клик по слоту:', time);
+                          handleToggleSlot(time);
+                        }}
                         className={`admin-slot ${isBooked ? 'booked' : 'free'}`}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.98 }}
                         disabled={loading}
                         title={isBooked && tooltipText ? tooltipText : (isBooked ? 'Закрыт' : 'Свободен')}
+                        type="button"
                       >
                         <span className="admin-slot-time">{time}</span>
                         <span className="admin-slot-status">
@@ -556,12 +594,16 @@ const Admin: React.FC = () => {
                   </div>
                   <div className="admin-slot-form__field">
                     <label>Процедура (необязательно)</label>
-                    <input
-                      type="text"
+                    <select
                       value={slotFormData.service}
                       onChange={(e) => setSlotFormData(prev => ({ ...prev, service: e.target.value }))}
-                      placeholder="Введите название процедуры"
-                    />
+                      className="admin-slot-form__select"
+                    >
+                      <option value="">Выберите процедуру или оставьте пустым</option>
+                      {allServices.map((service, index) => (
+                        <option key={index} value={service}>{service}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="admin-slot-form__buttons">
                     <motion.button

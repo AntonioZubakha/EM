@@ -342,6 +342,7 @@
 
 .admin-slot-wrapper {
   position: relative;
+  pointer-events: auto;
 }
 
 .admin-slot {
@@ -475,7 +476,8 @@
       font-size: 0.9rem;
     }
 
-    input {
+    input,
+    select {
       padding: 0.75rem 1rem;
       border: 2px solid var(--border-light);
       border-radius: 10px;
@@ -483,12 +485,22 @@
       transition: all 0.3s ease;
       background: var(--surface-primary);
       color: var(--text-primary);
+      width: 100%;
 
       &:focus {
         outline: none;
         border-color: var(--primary-purple);
         box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
       }
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238a2be2' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
     }
   }
 
