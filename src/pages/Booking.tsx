@@ -317,13 +317,26 @@ const Booking: React.FC = () => {
       return;
     }
     
-    // Сначала бронируем слот, потом отправляем в Telegram
+    // Сначала бронируем слот(ы), потом отправляем в Telegram
     if (selectedDate && selectedTime) {
       const servicesText = formData.services.join(', ');
-      const booked = await bookSlot(selectedDate, selectedTime, formData.name, formData.phone, servicesText);
+      const totalDuration = calculateTotalDuration(formData.services);
+      const booked = await bookSlot(
+        selectedDate, 
+        selectedTime, 
+        formData.name, 
+        formData.phone, 
+        servicesText,
+        totalDuration // Передаем длительность для блокировки нескольких слотов
+      );
       if (!booked) {
         // Если не удалось забронировать (например, уже занято), показываем ошибку
-        alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+        const hours = totalDuration > 0 ? Math.ceil(totalDuration / 60) : 1;
+        if (hours > 1) {
+          alert(`К сожалению, не все необходимые слоты доступны (требуется ${hours} ${hours === 2 || hours === 3 || hours === 4 ? 'часа' : 'часов'}). Пожалуйста, выберите другое время.`);
+        } else {
+          alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+        }
         setSelectedTime('');
         // Обновляем список занятых слотов
         const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -509,30 +522,52 @@ const Booking: React.FC = () => {
                   const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
                   const isBooked = selectedDate ? (bookedSlotsMap[dateStr] || []).includes(time) : false;
                   
+                  // Вычисляем, будет ли этот слот заблокирован выбранными услугами
+                  let isBlockedBySelection = false;
+                  if (isSelected && formData.services.length > 0) {
+                    const totalDuration = calculateTotalDuration(formData.services);
+                    const hours = totalDuration > 0 ? Math.ceil(totalDuration / 60) : 1;
+                    const selectedIndex = timeSlots.indexOf(selectedTime);
+                    const currentIndex = timeSlots.indexOf(time);
+                    // Проверяем, попадает ли текущий слот в диапазон заблокированных слотов
+                    isBlockedBySelection = currentIndex >= selectedIndex && currentIndex < selectedIndex + hours;
+                  }
+                  
+                  const isDisabled = isBooked || (isBlockedBySelection && !isSelected);
+                  
                   return (
                     <motion.button
                       key={time}
-                      className={`btn btn-secondary booking-time-slot ${isSelected ? 'selected-time' : ''} ${isBooked ? 'booked-time' : ''}`}
-                      disabled={isBooked}
-                      whileHover={!isSelected && !isBooked ? { 
+                      className={`btn btn-secondary booking-time-slot ${isSelected ? 'selected-time' : ''} ${isBooked ? 'booked-time' : ''} ${isBlockedBySelection && !isSelected ? 'blocked-time' : ''}`}
+                      disabled={isDisabled}
+                      whileHover={!isSelected && !isDisabled ? { 
                         scale: 1.05,
                         background: 'var(--primary-rose)',
                         color: 'var(--text-white)',
                         borderColor: 'var(--primary-rose)'
                       } : {}}
-                      whileTap={!isBooked ? { scale: 0.98 } : {}}
+                      whileTap={!isDisabled ? { scale: 0.98 } : {}}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => {
-                        if (!isBooked) {
+                        if (!isDisabled) {
                           setSelectedTime(time);
                         }
                       }}
-                      title={isBooked ? 'Это время уже занято' : ''}
+                      title={
+                        isBooked 
+                          ? 'Это время уже занято' 
+                          : isBlockedBySelection && !isSelected
+                          ? 'Будет заблокировано выбранными услугами'
+                          : ''
+                      }
                     >
                       {time}
                       {isBooked && <span className="booking-time-slot__booked-icon">✕</span>}
+                      {isBlockedBySelection && !isSelected && !isBooked && (
+                        <span className="booking-time-slot__blocked-icon">🔒</span>
+                      )}
                     </motion.button>
                   );
                 })}

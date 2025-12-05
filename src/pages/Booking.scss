@@ -412,6 +412,20 @@
     }
   }
   
+  &.blocked-time {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: var(--gradient-soft) !important;
+    border-color: var(--primary-rose) !important;
+    border-style: dashed !important;
+    color: var(--text-secondary) !important;
+    
+    &:hover {
+      transform: none !important;
+      scale: 1 !important;
+    }
+  }
+  
   &__booked-icon {
     position: absolute;
     top: 4px;
@@ -420,6 +434,14 @@
     color: var(--text-error, #dc3545);
     font-weight: bold;
     line-height: 1;
+  }
+  
+  &__blocked-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 0.8rem;
+    opacity: 0.6;
   }
   font-size: 1.1rem; // Увеличено
   font-weight: 600; // Увеличено

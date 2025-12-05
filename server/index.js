@@ -132,10 +132,25 @@ app.get('/api/booked-slots/:date', async (req, res) => {
   }
 });
 
+// Функция для вычисления следующих слотов времени
+function getNextTimeSlots(startTime, hours) {
+  const slots = [];
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  
+  for (let i = 0; i < hours; i++) {
+    const hour = startHour + i;
+    if (hour > 21) break; // Максимальное время 21:00
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+    slots.push(timeStr);
+  }
+  
+  return slots;
+}
+
 // POST /api/booked-slots - Добавить новую запись
 app.post('/api/booked-slots', async (req, res) => {
   try {
-    const { date, time, name, phone, service } = req.body;
+    const { date, time, name, phone, service, durationMinutes } = req.body;
     
     // Валидация
     if (!date || !time) {
@@ -184,36 +199,48 @@ app.post('/api/booked-slots', async (req, res) => {
     
     const slots = await loadBookedSlots();
     
-    // Проверяем, не занят ли уже слот
-    const isBooked = slots.some(slot => slot.date === date && slot.time === time);
-    if (isBooked) {
-      return res.status(409).json({ error: 'Это время уже занято' });
+    // Вычисляем количество слотов (каждый слот = 1 час)
+    const durationHours = durationMinutes ? Math.ceil(durationMinutes / 60) : 1;
+    const slotsToBook = getNextTimeSlots(time, durationHours);
+    
+    // Проверяем, не заняты ли все необходимые слоты
+    for (const slotTime of slotsToBook) {
+      const isBooked = slots.some(slot => slot.date === date && slot.time === slotTime);
+      if (isBooked) {
+        return res.status(409).json({ error: `Время ${slotTime} уже занято` });
+      }
     }
     
-    // Добавляем новую запись
-    const newSlot = {
-      date,
-      time,
-      name: name || undefined,
-      phone: phone || undefined,
-      service: service || undefined,
-      bookedAt: new Date().toISOString(),
-    };
+    // Добавляем все необходимые слоты
+    const bookedSlots = [];
+    for (const slotTime of slotsToBook) {
+      const newSlot = {
+        date,
+        time: slotTime,
+        name: name || undefined,
+        phone: phone || undefined,
+        service: service || undefined,
+        bookedAt: new Date().toISOString(),
+      };
+      slots.push(newSlot);
+      bookedSlots.push(newSlot);
+    }
     
-    slots.push(newSlot);
     const saved = await saveBookedSlots(slots);
     
     if (!saved) {
       // Если не удалось сохранить, проверяем еще раз (защита от race condition)
       const slotsAfter = await loadBookedSlots();
-      const isBookedAfter = slotsAfter.some(slot => slot.date === date && slot.time === time);
-      if (isBookedAfter) {
-        return res.status(409).json({ error: 'Это время уже занято' });
+      for (const slotTime of slotsToBook) {
+        const isBookedAfter = slotsAfter.some(slot => slot.date === date && slot.time === slotTime);
+        if (isBookedAfter) {
+          return res.status(409).json({ error: `Время ${slotTime} уже занято` });
+        }
       }
       return res.status(500).json({ error: 'Ошибка при сохранении записи' });
     }
     
-    res.status(201).json({ success: true, slot: newSlot });
+    res.status(201).json({ success: true, slots: bookedSlots });
   } catch (error) {
     console.error('Ошибка при добавлении записи:', error);
     res.status(500).json({ error: 'Ошибка при добавлении записи' });

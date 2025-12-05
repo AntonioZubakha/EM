@@ -57,22 +57,46 @@ export const isSlotBooked = async (date: Date, time: string): Promise<boolean> =
 };
 
 /**
- * Забронировать слот на сервере
+ * Вычислить следующие слоты времени на основе начального времени и количества часов
+ */
+const getNextTimeSlots = (startTime: string, hours: number): string[] => {
+  const slots: string[] = [];
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  
+  for (let i = 0; i < hours; i++) {
+    const hour = startHour + i;
+    if (hour > 21) break; // Максимальное время 21:00
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
+    slots.push(timeStr);
+  }
+  
+  return slots;
+};
+
+/**
+ * Забронировать слот(ы) на сервере
  */
 export const bookSlot = async (
   date: Date, 
   time: string, 
   name?: string, 
   phone?: string, 
-  service?: string
+  service?: string,
+  durationMinutes?: number
 ): Promise<boolean> => {
   try {
     const dateStr = formatDate(date);
     
-    // Проверяем, не занят ли уже слот
-    const alreadyBooked = await isSlotBooked(date, time);
-    if (alreadyBooked) {
-      return false;
+    // Вычисляем количество слотов (каждый слот = 1 час)
+    const hours = durationMinutes ? Math.ceil(durationMinutes / 60) : 1;
+    const slotsToBook = getNextTimeSlots(time, hours);
+    
+    // Проверяем, не заняты ли все необходимые слоты
+    for (const slotTime of slotsToBook) {
+      const alreadyBooked = await isSlotBooked(date, slotTime);
+      if (alreadyBooked) {
+        return false;
+      }
     }
     
     const response = await fetch(`${API_BASE_URL}/booked-slots`, {
@@ -86,6 +110,7 @@ export const bookSlot = async (
         name,
         phone,
         service,
+        durationMinutes, // Передаем длительность на сервер
       }),
     });
     
