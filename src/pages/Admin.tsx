@@ -239,45 +239,45 @@ const Admin: React.FC = () => {
       : baseIsWorking;
 
     calendarDays.push(
-      <motion.button
+      <div
         key={day.toString()}
-        onClick={(e) => {
-          // Ctrl+клик или Cmd+клик (Mac) - переключение статуса дня
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleToggleDayStatus(day);
-            return;
-          }
-          // Обычный клик - выбор дня (только для рабочих дней)
-          if (isWorking) {
-            setSelectedDate(day);
-          }
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleToggleDayStatus(day);
-        }}
-        onMouseDown={(e) => {
-          // Обработка правой кнопки мыши через mousedown
-          if (e.button === 2) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleToggleDayStatus(day);
-          }
-        }}
-        className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
-        whileHover={isWorking ? { scale: 1.05 } : {}}
-        whileTap={{ scale: 0.95 }}
-        style={{ cursor: isWorking ? 'pointer' : 'pointer' }}
-        title={hasOverride 
-          ? `${isWorking ? 'Рабочий' : 'Выходной'} (изменено). Ctrl+клик или ПКМ для изменения`
-          : `${isWorking ? 'Рабочий день' : 'Выходной'}. Ctrl+клик или ПКМ для изменения`}
+        className={`admin-calendar-day-wrapper ${isSelected ? 'selected' : ''}`}
       >
-        <span>{format(day, 'd')}</span>
-        {hasOverride && <span className="admin-calendar-day__override-icon">⚙</span>}
-      </motion.button>
+        <motion.button
+          onClick={() => {
+            // Обычный клик - выбор дня (только для рабочих дней)
+            if (isWorking) {
+              setSelectedDate(day);
+            }
+          }}
+          className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
+          whileHover={isWorking ? { scale: 1.05 } : {}}
+          whileTap={{ scale: 0.95 }}
+          title={hasOverride 
+            ? `${isWorking ? 'Рабочий' : 'Выходной'} (изменено). Клик по иконке для изменения`
+            : `${isWorking ? 'Рабочий день' : 'Выходной'}. Клик по иконке для изменения`}
+        >
+          <span>{format(day, 'd')}</span>
+        </motion.button>
+        <motion.button
+          className="admin-calendar-day__toggle-btn"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggleDayStatus(day);
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleToggleDayStatus(day);
+          }}
+          whileHover={{ scale: 1.2 }}
+          whileTap={{ scale: 0.9 }}
+          title="Переключить статус дня"
+        >
+          {hasOverride ? '⚙' : (isWorking ? '✓' : '✕')}
+        </motion.button>
+      </div>
     );
   });
 
