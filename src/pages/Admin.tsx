@@ -24,7 +24,7 @@ const Admin: React.FC = () => {
   const [workingDaysOverrides, setWorkingDaysOverrides] = useState<Record<string, 'working' | 'off'>>({});
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [slotFormData, setSlotFormData] = useState({ time: '', name: '', service: '' });
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggeredRef = useRef<boolean>(false);
   const [isLongPressing, setIsLongPressing] = useState(false);
 
@@ -304,7 +304,7 @@ const Admin: React.FC = () => {
   };
 
   // Обработчики для long press на мобильных
-  const handleTouchStart = (e: React.TouchEvent, date: Date) => {
+  const handleTouchStart = (_e: React.TouchEvent, date: Date) => {
     // Проверяем, что это мобильное устройство (ширина экрана <= 768px)
     if (window.innerWidth > 768) return;
     
@@ -319,7 +319,7 @@ const Admin: React.FC = () => {
     longPressTimerRef.current = timer;
   };
 
-  const handleTouchEnd = (e: React.TouchEvent, date: Date) => {
+  const handleTouchEnd = (_e: React.TouchEvent, date: Date) => {
     // Проверяем, что это мобильное устройство
     if (window.innerWidth > 768) return;
     
