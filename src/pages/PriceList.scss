@@ -708,7 +708,7 @@
   background: var(--surface-primary);
   
   @media (min-width: 769px) {
-    min-width: 800px;
+  min-width: 800px;
   }
   
   thead {
@@ -914,7 +914,7 @@
 
 .price-card {
   display: flex;
-  flex-direction: column;
+      flex-direction: column;
   padding: 1.5rem;
   border: 2px solid var(--border-medium);
   transition: all 0.3s ease;
@@ -923,8 +923,8 @@
     border-color: var(--primary-rose);
     transform: translateY(-4px);
     box-shadow: var(--shadow-medium);
-  }
-  
+      }
+      
   &__header {
     display: flex;
     justify-content: space-between;
@@ -933,8 +933,8 @@
     margin-bottom: 1rem;
     padding-bottom: 1rem;
     border-bottom: 2px solid var(--border-light);
-  }
-  
+      }
+      
   &__title {
     font-size: 1.3rem;
     font-weight: 700;
@@ -942,16 +942,16 @@
     margin: 0;
     flex: 1;
     line-height: 1.3;
-  }
-  
+      }
+      
   &__price {
     font-size: 1.4rem;
     font-weight: 700;
     color: var(--primary-rose-dark);
     white-space: nowrap;
     font-family: 'Playfair Display', serif;
-  }
-  
+      }
+      
   &__body {
     flex: 1;
     margin-bottom: 1.5rem;
@@ -962,8 +962,8 @@
     font-size: 1rem;
     line-height: 1.6;
     margin: 0 0 1rem 0;
-  }
-  
+    }
+    
   &__meta {
     display: flex;
     gap: 1rem;
@@ -975,14 +975,14 @@
     align-items: center;
     gap: 0.5rem;
     color: var(--text-secondary);
-    font-size: 0.95rem;
+        font-size: 0.95rem;
     font-weight: 500;
     padding: 0.5rem 1rem;
     background: var(--gradient-soft);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-light);
-  }
-  
+      }
+      
   &__footer {
     margin-top: auto;
     
@@ -998,19 +998,19 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 0.75rem;
-    }
-    
+      }
+      
     &__title {
       font-size: 1.15rem;
     }
     
     &__price {
       font-size: 1.25rem;
-    }
-    
+      }
+      
     &__description {
       font-size: 0.95rem;
-    }
+      }
     
     &__meta-item {
       font-size: 0.9rem;

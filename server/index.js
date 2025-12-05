@@ -210,10 +210,17 @@ app.post('/api/booked-slots', async (req, res) => {
       return res.status(400).json({ error: 'Название услуги слишком длинное' });
     }
     
-    // Проверка: в 20:00 можно забронировать только процедуру до 60 минут
+    // Проверка: процедура не должна заканчиваться после 21:00
     const duration = durationMinutes || 30;
-    if (time === '20:00' && duration > 60) {
-      return res.status(400).json({ error: 'В 20:00 можно забронировать только процедуру длительностью до 60 минут' });
+    const [startHour, startMinute] = time.split(':').map(Number);
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = startTotalMinutes + duration;
+    const endHour = Math.floor(endTotalMinutes / 60);
+    const endMinute = endTotalMinutes % 60;
+    
+    // Проверяем, не выходит ли конец процедуры за 21:00
+    if (endHour > 21 || (endHour === 21 && endMinute > 0)) {
+      return res.status(400).json({ error: 'Выбранные процедуры не поместятся в рабочее время, так как закончатся после 21:00. Пожалуйста, выберите более ранний временной слот' });
     }
     
     const slots = await loadBookedSlots();

@@ -239,6 +239,18 @@ const Booking: React.FC = () => {
     }
   };
 
+  // Проверка, не выходит ли конец процедуры за 21:00
+  const isProcedureEndsAfterWorkingHours = (startTime: string, durationMinutes: number): boolean => {
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = startTotalMinutes + durationMinutes;
+    const endHour = Math.floor(endTotalMinutes / 60);
+    const endMinute = endTotalMinutes % 60;
+    
+    // Проверяем, не выходит ли конец процедуры за 21:00
+    return endHour > 21 || (endHour === 21 && endMinute > 0);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({
       ...prev,
@@ -289,11 +301,12 @@ const Booking: React.FC = () => {
       return;
     }
     
-    // Проверяем ограничение для времени 20:00 (можно только до 60 минут)
-    if (selectedTime === '20:00' && formData.services.length > 0) {
+    // Проверяем, не выходит ли конец процедуры за 21:00
+    if (selectedTime && formData.services.length > 0) {
       const totalDuration = calculateTotalDuration(formData.services);
-      if (totalDuration > 60) {
-        alert('В 20:00 можно забронировать только процедуру длительностью до 60 минут. Пожалуйста, выберите другое время или уменьшите количество услуг.');
+      if (isProcedureEndsAfterWorkingHours(selectedTime, totalDuration)) {
+        const durationText = formatDuration(totalDuration);
+        alert(`К сожалению, выбранные процедуры (${durationText}) не поместятся в рабочее время, так как закончатся после 21:00. Пожалуйста, выберите более ранний временной слот.`);
         return;
       }
     }
@@ -540,26 +553,21 @@ const Booking: React.FC = () => {
                   let isBlockedBySelection = false;
                   let isTooLateForDuration = false;
                   
-                  if (isSelected && formData.services.length > 0) {
+                  if (formData.services.length > 0) {
                     const totalDuration = calculateTotalDuration(formData.services);
-                    // Количество получасовых слотов (округление вверх)
-                    const numberOfSlots = totalDuration > 0 ? Math.ceil(totalDuration / 30) : 1;
-                    const selectedIndex = timeSlots.indexOf(selectedTime);
-                    const currentIndex = timeSlots.indexOf(time);
-                    // Проверяем, попадает ли текущий слот в диапазон заблокированных слотов
-                    isBlockedBySelection = currentIndex >= selectedIndex && currentIndex < selectedIndex + numberOfSlots;
                     
-                    // Проверяем, не слишком ли поздно для выбранной длительности (в 20:00 можно только до 60 минут)
-                    if (selectedTime === '20:00' && totalDuration > 60) {
+                    // Проверяем, не выходит ли конец процедуры за 21:00
+                    if (isProcedureEndsAfterWorkingHours(time, totalDuration)) {
                       isTooLateForDuration = true;
                     }
-                  }
-                  
-                  // Проверяем, не слишком ли поздно для выбранных услуг (если время уже выбрано)
-                  if (!isSelected && selectedTime && formData.services.length > 0) {
-                    const totalDuration = calculateTotalDuration(formData.services);
-                    if (time === '20:00' && totalDuration > 60) {
-                      isTooLateForDuration = true;
+                    
+                    if (isSelected) {
+                      // Количество получасовых слотов (округление вверх)
+                      const numberOfSlots = totalDuration > 0 ? Math.ceil(totalDuration / 30) : 1;
+                      const selectedIndex = timeSlots.indexOf(selectedTime);
+                      const currentIndex = timeSlots.indexOf(time);
+                      // Проверяем, попадает ли текущий слот в диапазон заблокированных слотов
+                      isBlockedBySelection = currentIndex >= selectedIndex && currentIndex < selectedIndex + numberOfSlots;
                     }
                   }
                   
@@ -589,7 +597,7 @@ const Booking: React.FC = () => {
                         isBooked 
                           ? 'Это время уже занято' 
                           : isTooLateForDuration
-                          ? 'В 20:00 можно забронировать только процедуру до 60 минут'
+                          ? 'Процедура закончится после 21:00. Пожалуйста, выберите более раннее время'
                           : isBlockedBySelection && !isSelected
                           ? 'Будет заблокировано выбранными услугами'
                           : ''
