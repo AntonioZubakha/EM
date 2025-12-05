@@ -99,6 +99,8 @@ export const isWorkingDay = async (date: Date): Promise<boolean> => {
 export const setDayStatus = async (date: Date, status: 'working' | 'off'): Promise<boolean> => {
   try {
     const dateStr = format(date, 'yyyy-MM-dd');
+    console.log('setDayStatus: отправка запроса', { dateStr, status, API_BASE_URL });
+    
     const response = await fetch(`${API_BASE_URL}/working-days/${dateStr}`, {
       method: 'POST',
       headers: {
@@ -107,9 +109,16 @@ export const setDayStatus = async (date: Date, status: 'working' | 'off'): Promi
       body: JSON.stringify({ status }),
     });
     
+    console.log('setDayStatus: ответ сервера', { status: response.status, ok: response.ok });
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('setDayStatus: ошибка ответа', errorText);
       return false;
     }
+    
+    const result = await response.json();
+    console.log('setDayStatus: результат', result);
     
     // Обновляем кэш
     workingDaysOverrides[dateStr] = status;

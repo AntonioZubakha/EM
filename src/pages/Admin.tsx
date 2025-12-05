@@ -170,6 +170,7 @@ const Admin: React.FC = () => {
   ));
 
   const handleToggleDayStatus = async (date: Date) => {
+    console.log('handleToggleDayStatus вызвана для:', format(date, 'yyyy-MM-dd'));
     const dateStr = format(date, 'yyyy-MM-dd');
     const baseIsWorking = isWorkingDayBase(date);
     const hasOverride = dateStr in workingDaysOverrides;
@@ -184,16 +185,26 @@ const Admin: React.FC = () => {
       newStatus = baseIsWorking ? 'off' : 'working';
     }
     
+    console.log('Текущий статус:', hasOverride ? workingDaysOverrides[dateStr] : (baseIsWorking ? 'working' : 'off'));
+    console.log('Новый статус:', newStatus);
+    
     setLoading(true);
     try {
       const success = await setDayStatus(date, newStatus);
+      console.log('Результат setDayStatus:', success);
       if (success) {
-        setWorkingDaysOverrides(prev => ({ ...prev, [dateStr]: newStatus }));
+        setWorkingDaysOverrides(prev => {
+          const updated = { ...prev, [dateStr]: newStatus };
+          console.log('Обновленные переопределения:', updated);
+          return updated;
+        });
         // Если день стал выходным и был выбран, сбрасываем выбор
         if (newStatus === 'off' && selectedDate && isSameDay(date, selectedDate)) {
           setSelectedDate(null);
           setBookedSlots([]);
         }
+      } else {
+        console.error('setDayStatus вернул false');
       }
     } catch (error) {
       console.error('Ошибка при изменении статуса дня:', error);

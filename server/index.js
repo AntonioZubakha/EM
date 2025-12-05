@@ -206,13 +206,108 @@ app.delete('/api/booked-slots/:date/:time', async (req, res) => {
   }
 });
 
+// Инициализация файла с рабочими днями если его нет
+async function ensureWorkingDaysFile() {
+  try {
+    await fs.access(WORKING_DAYS_FILE);
+  } catch {
+    // Файл не существует, создаем пустой
+    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides: {} }, null, 2));
+  }
+}
+
+// Загрузить настройки рабочих дней
+async function loadWorkingDays() {
+  try {
+    const data = await fs.readFile(WORKING_DAYS_FILE, 'utf-8');
+    const json = JSON.parse(data);
+    return json.overrides || {};
+  } catch (error) {
+    console.error('Ошибка при чтении файла рабочих дней:', error);
+    return {};
+  }
+}
+
+// Сохранить настройки рабочих дней
+async function saveWorkingDays(overrides) {
+  try {
+    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides }, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Ошибка при сохранении файла рабочих дней:', error);
+    return false;
+  }
+}
+
+// API для управления рабочими днями
+
+// GET /api/working-days - Получить все переопределения рабочих дней
+app.get('/api/working-days', async (req, res) => {
+  try {
+    const overrides = await loadWorkingDays();
+    res.json({ overrides });
+  } catch (error) {
+    console.error('Ошибка при получении рабочих дней:', error);
+    res.status(500).json({ error: 'Ошибка при получении рабочих дней' });
+  }
+});
+
+// POST /api/working-days/:date - Установить статус дня (working/off)
+app.post('/api/working-days/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+    const { status } = req.body; // 'working' или 'off'
+    
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ error: 'Неверный формат даты. Используйте YYYY-MM-DD' });
+    }
+    
+    if (status !== 'working' && status !== 'off') {
+      return res.status(400).json({ error: 'Статус должен быть "working" или "off"' });
+    }
+    
+    const overrides = await loadWorkingDays();
+    overrides[date] = status;
+    
+    const saved = await saveWorkingDays(overrides);
+    if (!saved) {
+      return res.status(500).json({ error: 'Ошибка при сохранении статуса дня' });
+    }
+    
+    res.json({ success: true, date, status });
+  } catch (error) {
+    console.error('Ошибка при установке статуса дня:', error);
+    res.status(500).json({ error: 'Ошибка при установке статуса дня' });
+  }
+});
+
+// DELETE /api/working-days/:date - Удалить переопределение (вернуть к автоматическому)
+app.delete('/api/working-days/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+    
+    const overrides = await loadWorkingDays();
+    delete overrides[date];
+    
+    const saved = await saveWorkingDays(overrides);
+    if (!saved) {
+      return res.status(500).json({ error: 'Ошибка при удалении переопределения' });
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Ошибка при удалении переопределения:', error);
+    res.status(500).json({ error: 'Ошибка при удалении переопределения' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Инициализация при запуске
-ensureBookedSlotsFile().then(() => {
+Promise.all([ensureBookedSlotsFile(), ensureWorkingDaysFile()]).then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`📅 API для управления записями доступен на http://localhost:${PORT}/api`);

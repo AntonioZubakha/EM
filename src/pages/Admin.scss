@@ -169,6 +169,7 @@
 .admin-calendar-day-wrapper {
   position: relative;
   aspect-ratio: 1;
+  pointer-events: auto;
 }
 
 .admin-calendar-day {
@@ -260,9 +261,10 @@
     justify-content: center;
     font-size: 0.8rem;
     color: var(--primary-purple);
-    z-index: 10;
+    z-index: 100;
     transition: all 0.2s ease;
     padding: 0;
+    pointer-events: auto;
 
     &:hover {
       background: var(--primary-purple);
@@ -272,6 +274,11 @@
 
     &:active {
       transform: scale(0.9);
+    }
+
+    &:focus {
+      outline: 2px solid var(--primary-purple);
+      outline-offset: 2px;
     }
   }
 }
