@@ -399,7 +399,7 @@ const Admin: React.FC = () => {
             onTouchStart={(e) => handleTouchStart(e, day)}
             onTouchEnd={(e) => handleTouchEnd(e, day)}
             onTouchCancel={handleTouchCancel}
-            className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''} ${isLongPressing ? 'long-pressing' : ''}`}
+            className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${isLongPressing ? 'long-pressing' : ''}`}
             whileHover={isWorking && window.innerWidth > 768 ? { scale: 1.05 } : {}}
             whileTap={{ scale: 0.95 }}
             title={isWorking ? 'Рабочий день. На мобильных: зажмите для изменения статуса' : 'Выходной. На мобильных: зажмите для изменения статуса'}
