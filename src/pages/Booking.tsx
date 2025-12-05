@@ -193,7 +193,7 @@ const Booking: React.FC = () => {
     return totalMinutes;
   };
 
-  // Функция для расчета общего времени с учетом перерывов
+  // Функция для расчета общего времени
   const calculateTotalDuration = (selectedServices: string[]): number => {
     if (selectedServices.length === 0) return 0;
     
@@ -213,11 +213,6 @@ const Booking: React.FC = () => {
         }
       }
     });
-    
-    // Добавляем перерывы между процедурами (15 минут между каждой парой)
-    if (selectedServices.length > 1) {
-      totalMinutes += (selectedServices.length - 1) * 15;
-    }
     
     return totalMinutes;
   };
