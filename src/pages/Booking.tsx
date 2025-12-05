@@ -142,12 +142,12 @@ const Booking: React.FC = () => {
     );
   });
 
-  // Генерируем получасовые слоты с 09:00 до 21:00
+  // Генерируем получасовые слоты с 09:00 до 20:00 (последний слот 20:00)
   const timeSlots = React.useMemo(() => {
     const slots: string[] = [];
-    for (let hour = 9; hour <= 21; hour++) {
+    for (let hour = 9; hour <= 20; hour++) {
       slots.push(`${String(hour).padStart(2, '0')}:00`);
-      if (hour < 21) { // 21:30 не добавляем, так как рабочий день до 21:00
+      if (hour < 20) { // 20:30 не добавляем, последний слот 20:00
         slots.push(`${String(hour).padStart(2, '0')}:30`);
       }
     }
@@ -283,6 +283,21 @@ const Booking: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Проверка, что выбрана хотя бы одна услуга
+    if (formData.services.length === 0) {
+      alert('Пожалуйста, выберите хотя бы одну услугу');
+      return;
+    }
+    
+    // Проверяем ограничение для времени 20:00 (можно только до 60 минут)
+    if (selectedTime === '20:00' && formData.services.length > 0) {
+      const totalDuration = calculateTotalDuration(formData.services);
+      if (totalDuration > 60) {
+        alert('В 20:00 можно забронировать только процедуру длительностью до 60 минут. Пожалуйста, выберите другое время или уменьшите количество услуг.');
+        return;
+      }
+    }
+    
     // Проверяем, что выбранные дата и время не заняты
     if (selectedDate && selectedTime && formData.services.length > 0) {
       const totalDuration = calculateTotalDuration(formData.services);
@@ -296,12 +311,6 @@ const Booking: React.FC = () => {
         setBookedSlotsMap(prev => ({ ...prev, [dateStr]: slots }));
         return;
       }
-    }
-    
-    // Проверка, что выбрана хотя бы одна услуга
-    if (formData.services.length === 0) {
-      alert('Пожалуйста, выберите хотя бы одну услугу');
-      return;
     }
     
     // Отслеживание отправки формы
@@ -529,6 +538,8 @@ const Booking: React.FC = () => {
                   
                   // Вычисляем, будет ли этот слот заблокирован выбранными услугами
                   let isBlockedBySelection = false;
+                  let isTooLateForDuration = false;
+                  
                   if (isSelected && formData.services.length > 0) {
                     const totalDuration = calculateTotalDuration(formData.services);
                     // Количество получасовых слотов (округление вверх)
@@ -537,9 +548,22 @@ const Booking: React.FC = () => {
                     const currentIndex = timeSlots.indexOf(time);
                     // Проверяем, попадает ли текущий слот в диапазон заблокированных слотов
                     isBlockedBySelection = currentIndex >= selectedIndex && currentIndex < selectedIndex + numberOfSlots;
+                    
+                    // Проверяем, не слишком ли поздно для выбранной длительности (в 20:00 можно только до 60 минут)
+                    if (selectedTime === '20:00' && totalDuration > 60) {
+                      isTooLateForDuration = true;
+                    }
                   }
                   
-                  const isDisabled = isBooked || (isBlockedBySelection && !isSelected);
+                  // Проверяем, не слишком ли поздно для выбранных услуг (если время уже выбрано)
+                  if (!isSelected && selectedTime && formData.services.length > 0) {
+                    const totalDuration = calculateTotalDuration(formData.services);
+                    if (time === '20:00' && totalDuration > 60) {
+                      isTooLateForDuration = true;
+                    }
+                  }
+                  
+                  const isDisabled = isBooked || (isBlockedBySelection && !isSelected) || isTooLateForDuration;
                   
                   return (
                     <motion.button
@@ -564,6 +588,8 @@ const Booking: React.FC = () => {
                       title={
                         isBooked 
                           ? 'Это время уже занято' 
+                          : isTooLateForDuration
+                          ? 'В 20:00 можно забронировать только процедуру до 60 минут'
                           : isBlockedBySelection && !isSelected
                           ? 'Будет заблокировано выбранными услугами'
                           : ''

@@ -53,11 +53,11 @@ export const isSlotBooked = async (date: Date, time: string, durationMinutes: nu
   await refreshCache();
   const dateStr = formatDate(date);
   
-  // Генерируем список всех получасовых слотов для проверки
+  // Генерируем список всех получасовых слотов для проверки (до 20:00)
   const allTimeSlots: string[] = [];
-  for (let hour = 9; hour <= 21; hour++) {
+  for (let hour = 9; hour <= 20; hour++) {
     allTimeSlots.push(`${String(hour).padStart(2, '0')}:00`);
-    if (hour < 21) {
+    if (hour < 20) {
       allTimeSlots.push(`${String(hour).padStart(2, '0')}:30`);
     }
   }
@@ -95,8 +95,8 @@ const getNextTimeSlots = (startTime: string, durationMinutes: number): string[] 
     const hour = Math.floor(currentMinutes / 60);
     const minute = currentMinutes % 60;
     
-    // Максимальное время 21:00
-    if (hour > 21 || (hour === 21 && minute > 0)) break;
+    // Максимальное время 20:00 (последний слот)
+    if (hour > 20 || (hour === 20 && minute > 0)) break;
     
     const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
     slots.push(timeStr);

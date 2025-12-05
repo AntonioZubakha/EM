@@ -147,8 +147,8 @@ function getNextTimeSlots(startTime, durationMinutes) {
     const hour = Math.floor(currentMinutes / 60);
     const minute = currentMinutes % 60;
     
-    // Максимальное время 21:00
-    if (hour > 21 || (hour === 21 && minute > 0)) break;
+    // Максимальное время 20:00 (последний слот)
+    if (hour > 20 || (hour === 20 && minute > 0)) break;
     
     const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
     slots.push(timeStr);
@@ -208,6 +208,12 @@ app.post('/api/booked-slots', async (req, res) => {
     }
     if (service && service.length > 200) {
       return res.status(400).json({ error: 'Название услуги слишком длинное' });
+    }
+    
+    // Проверка: в 20:00 можно забронировать только процедуру до 60 минут
+    const duration = durationMinutes || 30;
+    if (time === '20:00' && duration > 60) {
+      return res.status(400).json({ error: 'В 20:00 можно забронировать только процедуру длительностью до 60 минут' });
     }
     
     const slots = await loadBookedSlots();
