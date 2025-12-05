@@ -18,8 +18,11 @@ const Admin: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [bookedSlotsInfo, setBookedSlotsInfo] = useState<Record<string, { name?: string; service?: string }>>({});
   const [loading, setLoading] = useState(false);
   const [workingDaysOverrides, setWorkingDaysOverrides] = useState<Record<string, 'working' | 'off'>>({});
+  const [showSlotForm, setShowSlotForm] = useState(false);
+  const [slotFormData, setSlotFormData] = useState({ time: '', name: '', service: '' });
 
   const timeSlots = [
     '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
@@ -86,8 +89,33 @@ const Admin: React.FC = () => {
     
     setLoading(true);
     try {
-      const slots = await getBookedSlotsForDate(selectedDate);
-      setBookedSlots(slots);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      
+      // Получаем полную информацию о слотах
+      const response = await fetch(`${API_BASE_URL}/booked-slots?date=${dateStr}`);
+      if (response.ok) {
+        const data = await response.json();
+        const slotsForDate = data.bookedSlots.filter((slot: any) => slot.date === dateStr);
+        
+        const times = slotsForDate.map((slot: any) => slot.time);
+        const info: Record<string, { name?: string; service?: string }> = {};
+        
+        slotsForDate.forEach((slot: any) => {
+          info[slot.time] = {
+            name: slot.name,
+            service: slot.service,
+          };
+        });
+        
+        setBookedSlots(times);
+        setBookedSlotsInfo(info);
+      } else {
+        // Fallback на старый метод
+        const slots = await getBookedSlotsForDate(selectedDate);
+        setBookedSlots(slots);
+        setBookedSlotsInfo({});
+      }
     } catch (error) {
       console.error('Ошибка при загрузке слотов:', error);
     } finally {
@@ -98,38 +126,66 @@ const Admin: React.FC = () => {
   const handleToggleSlot = async (time: string) => {
     if (!selectedDate) return;
     
-    setLoading(true);
-    try {
-      if (bookedSlots.includes(time)) {
-        // Освобождаем слот
+    if (bookedSlots.includes(time)) {
+      // Освобождаем слот
+      setLoading(true);
+      try {
         const success = await releaseSlot(selectedDate, time);
         if (success) {
           setBookedSlots(prev => prev.filter(slot => slot !== time));
+          setBookedSlotsInfo(prev => {
+            const updated = { ...prev };
+            delete updated[time];
+            return updated;
+          });
         }
-      } else {
-        // Закрываем слот (используем API для бронирования с пустыми данными)
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-        const dateStr = format(selectedDate, 'yyyy-MM-dd');
-        
-        const response = await fetch(`${API_BASE_URL}/booked-slots`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+      } catch (error) {
+        console.error('Ошибка при освобождении слота:', error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Показываем форму для ввода данных
+      setSlotFormData({ time, name: '', service: '' });
+      setShowSlotForm(true);
+    }
+  };
+
+  const handleCloseSlot = async () => {
+    if (!selectedDate || !slotFormData.time) return;
+    
+    setLoading(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      
+      const response = await fetch(`${API_BASE_URL}/booked-slots`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: dateStr,
+          time: slotFormData.time,
+          name: slotFormData.name || 'Админ',
+          service: slotFormData.service || 'Закрыто администратором',
+        }),
+      });
+      
+      if (response.ok) {
+        setBookedSlots(prev => [...prev, slotFormData.time]);
+        setBookedSlotsInfo(prev => ({
+          ...prev,
+          [slotFormData.time]: {
+            name: slotFormData.name || 'Админ',
+            service: slotFormData.service || 'Закрыто администратором',
           },
-          body: JSON.stringify({
-            date: dateStr,
-            time,
-            name: 'Админ',
-            service: 'Закрыто администратором',
-          }),
-        });
-        
-        if (response.ok) {
-          setBookedSlots(prev => [...prev, time]);
-        }
+        }));
+        setShowSlotForm(false);
+        setSlotFormData({ time: '', name: '', service: '' });
       }
     } catch (error) {
-      console.error('Ошибка при изменении слота:', error);
+      console.error('Ошибка при закрытии слота:', error);
     } finally {
       setLoading(false);
     }
@@ -153,6 +209,7 @@ const Admin: React.FC = () => {
       }
       
       setBookedSlots([]);
+      setBookedSlotsInfo({});
     } catch (error) {
       console.error('Ошибка при очистке слотов:', error);
     } finally {
@@ -439,23 +496,97 @@ const Admin: React.FC = () => {
               <div className="admin-slots-grid">
                 {timeSlots.map((time) => {
                   const isBooked = bookedSlots.includes(time);
+                  const slotInfo = bookedSlotsInfo[time];
+                  const tooltipText = slotInfo 
+                    ? `${slotInfo.name || 'Клиент'}${slotInfo.service ? ` - ${slotInfo.service}` : ''}`
+                    : '';
+                  
                   return (
-                    <motion.button
+                    <motion.div
                       key={time}
-                      onClick={() => handleToggleSlot(time)}
-                      className={`admin-slot ${isBooked ? 'booked' : 'free'}`}
+                      className="admin-slot-wrapper"
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <motion.button
+                        onClick={() => handleToggleSlot(time)}
+                        className={`admin-slot ${isBooked ? 'booked' : 'free'}`}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={loading}
+                        title={isBooked && tooltipText ? tooltipText : (isBooked ? 'Закрыт' : 'Свободен')}
+                      >
+                        <span className="admin-slot-time">{time}</span>
+                        <span className="admin-slot-status">
+                          {isBooked ? '✕ Закрыт' : '✓ Свободен'}
+                        </span>
+                        {isBooked && slotInfo && (
+                          <span className="admin-slot-info">
+                            {slotInfo.name && <span className="admin-slot-name">{slotInfo.name}</span>}
+                            {slotInfo.service && <span className="admin-slot-service">{slotInfo.service}</span>}
+                          </span>
+                        )}
+                      </motion.button>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            {showSlotForm && (
+              <motion.div
+                className="admin-slot-form-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                onClick={() => setShowSlotForm(false)}
+              >
+                <motion.div
+                  className="admin-slot-form"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h3>Закрыть слот {slotFormData.time}</h3>
+                  <div className="admin-slot-form__field">
+                    <label>Имя клиента (необязательно)</label>
+                    <input
+                      type="text"
+                      value={slotFormData.name}
+                      onChange={(e) => setSlotFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Введите имя"
+                    />
+                  </div>
+                  <div className="admin-slot-form__field">
+                    <label>Процедура (необязательно)</label>
+                    <input
+                      type="text"
+                      value={slotFormData.service}
+                      onChange={(e) => setSlotFormData(prev => ({ ...prev, service: e.target.value }))}
+                      placeholder="Введите название процедуры"
+                    />
+                  </div>
+                  <div className="admin-slot-form__buttons">
+                    <motion.button
+                      onClick={handleCloseSlot}
+                      className="btn btn-primary"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                       disabled={loading}
                     >
-                      <span>{time}</span>
-                      <span className="admin-slot-status">
-                        {isBooked ? '✕ Закрыт' : '✓ Свободен'}
-                      </span>
+                      Закрыть слот
                     </motion.button>
-                  );
-                })}
-              </div>
+                    <motion.button
+                      onClick={() => {
+                        setShowSlotForm(false);
+                        setSlotFormData({ time: '', name: '', service: '' });
+                      }}
+                      className="btn btn-secondary"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Отмена
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
             )}
           </motion.div>
         )}

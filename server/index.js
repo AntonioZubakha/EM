@@ -102,6 +102,13 @@ app.get('/api/booked-slots', async (req, res) => {
   try {
     const slots = await loadBookedSlots();
     const validSlots = filterOldSlots(slots);
+    
+    // Если передан параметр date, фильтруем по дате
+    if (req.query.date) {
+      const filtered = validSlots.filter(slot => slot.date === req.query.date);
+      return res.json({ bookedSlots: filtered });
+    }
+    
     res.json({ bookedSlots: validSlots });
   } catch (error) {
     console.error('Ошибка при получении слотов:', error);

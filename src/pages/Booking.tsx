@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isBefore, startOfDay, getDay, addDays } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import servicesData from '../data/services.json';
+import pricelistData from '../data/pricelist.json';
 import { LocationIcon, PhoneIcon, SuccessIcon, CheckIcon, ClockIcon, CardIcon, GiftIcon, CalendarIcon } from '../components/Icons';
 import { trackBookingSubmit, trackBookingSuccess, trackBookingError, trackPhoneClick, trackTelegramClick } from '../utils/analytics';
 import { getBookedSlotsForDate, isSlotBooked, bookSlot, getBookedSlots } from '../utils/bookingSlots';
@@ -285,18 +286,22 @@ const Booking: React.FC = () => {
   const whatsappLink = `https://wa.me/79161427895`;
   const imoLink = `https://imo.im/79161427895`;
 
-  const services = [
-    'Маникюр классический',
-    'Маникюр с покрытием Shellac',
-    'Маникюр со снятием и покрытием',
-    'Японский маникюр',
-    'Smart педикюр',
-    'Аппаратный педикюр',
-    'Классический педикюр',
-    'Комбинированный педикюр',
-    'Педикюр для мужчин',
-    'Маникюр для мужчин'
-  ];
+  // Генерируем список услуг из прайс-листа
+  const services = React.useMemo(() => {
+    const serviceList: string[] = [];
+    
+    // Добавляем все услуги из категории "manicure"
+    pricelistData.manicure.forEach((service: { name: string }) => {
+      serviceList.push(service.name);
+    });
+    
+    // Добавляем все услуги из категории "pedicure"
+    pricelistData.pedicure.forEach((service: { name: string }) => {
+      serviceList.push(service.name);
+    });
+    
+    return serviceList;
+  }, []);
 
   return (
     <div className="container booking-section">
