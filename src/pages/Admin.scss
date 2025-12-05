@@ -286,6 +286,30 @@
       outline: 2px solid var(--primary-purple);
       outline-offset: 2px;
     }
+
+    // Скрываем кнопку на мобильных устройствах
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  // Визуальная обратная связь при long press на мобильных
+  &.long-pressing {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.3);
+    animation: longPressPulse 0.6s ease-in-out;
+  }
+}
+
+@keyframes longPressPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(138, 43, 226, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.3);
   }
 }
 

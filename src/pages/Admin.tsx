@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -24,6 +24,9 @@ const Admin: React.FC = () => {
   const [workingDaysOverrides, setWorkingDaysOverrides] = useState<Record<string, 'working' | 'off'>>({});
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [slotFormData, setSlotFormData] = useState({ time: '', name: '', service: '' });
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTriggeredRef = useRef<boolean>(false);
+  const [isLongPressing, setIsLongPressing] = useState(false);
 
   const timeSlots = [
     '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'
@@ -292,6 +295,63 @@ const Admin: React.FC = () => {
     }
   };
 
+  // Обработчики для long press на мобильных
+  const handleTouchStart = (e: React.TouchEvent, date: Date) => {
+    // Проверяем, что это мобильное устройство (ширина экрана <= 768px)
+    if (window.innerWidth > 768) return;
+    
+    longPressTriggeredRef.current = false;
+    setIsLongPressing(false);
+    
+    const timer = setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      setIsLongPressing(true);
+      handleToggleDayStatus(date);
+    }, 600); // 600ms для long press
+    longPressTimerRef.current = timer;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, date: Date) => {
+    // Проверяем, что это мобильное устройство
+    if (window.innerWidth > 768) return;
+    
+    const wasLongPress = longPressTriggeredRef.current;
+    
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    
+    // Если не было long press, делаем обычный клик (выбор дня)
+    if (!wasLongPress) {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const hasOverride = dateStr in workingDaysOverrides;
+      const baseIsWorking = isWorkingDayBase(date);
+      const isWorking = hasOverride 
+        ? workingDaysOverrides[dateStr] === 'working'
+        : baseIsWorking;
+      
+      if (isWorking) {
+        setSelectedDate(date);
+      }
+    }
+    
+    // Сбрасываем флаги через небольшую задержку
+    setTimeout(() => {
+      setIsLongPressing(false);
+      longPressTriggeredRef.current = false;
+    }, 100);
+  };
+
+  const handleTouchCancel = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    setIsLongPressing(false);
+    longPressTriggeredRef.current = false;
+  };
+
   // Генерация календаря с использованием useMemo для пересчета при изменении workingDaysOverrides
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -322,15 +382,19 @@ const Admin: React.FC = () => {
         >
           <motion.button
             onClick={() => {
-              // Обычный клик - выбор дня (только для рабочих дней)
-              if (isWorking) {
+              // Обычный клик - выбор дня (только для рабочих дней, только на десктопе)
+              // На мобильных это обрабатывается через handleTouchEnd
+              if (isWorking && window.innerWidth > 768) {
                 setSelectedDate(day);
               }
             }}
-            className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
-            whileHover={isWorking ? { scale: 1.05 } : {}}
+            onTouchStart={(e) => handleTouchStart(e, day)}
+            onTouchEnd={(e) => handleTouchEnd(e, day)}
+            onTouchCancel={handleTouchCancel}
+            className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''} ${isLongPressing ? 'long-pressing' : ''}`}
+            whileHover={isWorking && window.innerWidth > 768 ? { scale: 1.05 } : {}}
             whileTap={{ scale: 0.95 }}
-            title={isWorking ? 'Рабочий день. Клик по иконке для изменения' : 'Выходной. Клик по иконке для изменения'}
+            title={isWorking ? 'Рабочий день. На мобильных: зажмите для изменения статуса' : 'Выходной. На мобильных: зажмите для изменения статуса'}
           >
             <span>{format(day, 'd')}</span>
           </motion.button>
@@ -581,7 +645,7 @@ const Admin: React.FC = () => {
           <div className="admin-hint">
             <p>Выберите рабочий день в календаре для управления слотами</p>
             <p className="admin-hint__tip">
-              💡 <strong>Совет:</strong> Клик по иконке ✓/✕ на дне для переключения статуса (рабочий/выходной)
+              💡 <strong>Совет:</strong> На десктопе - клик по иконке ✓/✕ для переключения статуса. На мобильных - зажмите день на 0.6 секунды для переключения статуса.
             </p>
           </div>
         )}
