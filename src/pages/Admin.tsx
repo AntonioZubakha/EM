@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -99,26 +99,14 @@ const Admin: React.FC = () => {
     setBookedSlots([]);
   };
 
-  // Загрузка занятых слотов при выборе даты (только для рабочих дней)
-  useEffect(() => {
-    if (selectedDate) {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const hasOverride = dateStr in workingDaysOverrides;
-      const baseIsWorking = isWorkingDayBase(selectedDate);
-      const isWorking = hasOverride 
-        ? workingDaysOverrides[dateStr] === 'working'
-        : baseIsWorking;
-      
-      if (isWorking) {
-        loadBookedSlots();
-      } else {
-        setBookedSlots([]);
-        setSelectedDate(null);
-      }
-    }
-  }, [selectedDate, workingDaysOverrides]);
+  interface BookedSlotData {
+    date: string;
+    time: string;
+    name?: string;
+    service?: string;
+  }
 
-  const loadBookedSlots = async () => {
+  const loadBookedSlots = useCallback(async () => {
     if (!selectedDate) return;
     
     setLoading(true);
@@ -130,12 +118,12 @@ const Admin: React.FC = () => {
       const response = await fetch(`${API_BASE_URL}/booked-slots?date=${dateStr}`);
       if (response.ok) {
         const data = await response.json();
-        const slotsForDate = data.bookedSlots.filter((slot: any) => slot.date === dateStr);
+        const slotsForDate = (data.bookedSlots as BookedSlotData[]).filter((slot) => slot.date === dateStr);
         
-        const times = slotsForDate.map((slot: any) => slot.time);
+        const times = slotsForDate.map((slot) => slot.time);
         const info: Record<string, { name?: string; service?: string }> = {};
         
-        slotsForDate.forEach((slot: any) => {
+        slotsForDate.forEach((slot) => {
           info[slot.time] = {
             name: slot.name,
             service: slot.service,
@@ -155,7 +143,26 @@ const Admin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
+
+  // Загрузка занятых слотов при выборе даты (только для рабочих дней)
+  useEffect(() => {
+    if (selectedDate) {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const hasOverride = dateStr in workingDaysOverrides;
+      const baseIsWorking = isWorkingDayBase(selectedDate);
+      const isWorking = hasOverride 
+        ? workingDaysOverrides[dateStr] === 'working'
+        : baseIsWorking;
+      
+      if (isWorking) {
+        loadBookedSlots();
+      } else {
+        setBookedSlots([]);
+        setSelectedDate(null);
+      }
+    }
+  }, [selectedDate, workingDaysOverrides, loadBookedSlots]);
 
   const handleToggleSlot = async (time: string) => {
     console.log('handleToggleSlot вызвана для времени:', time);
@@ -269,7 +276,7 @@ const Admin: React.FC = () => {
     }
   };
 
-  const handleToggleDayStatus = async (date: Date) => {
+  const handleToggleDayStatus = useCallback(async (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     const hasOverride = dateStr in workingDaysOverrides;
     const baseIsWorking = isWorkingDayBase(date);
@@ -301,10 +308,10 @@ const Admin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [workingDaysOverrides, selectedDate]);
 
   // Обработчики для long press на мобильных
-  const handleTouchStart = (_e: React.TouchEvent, date: Date) => {
+  const handleTouchStart = useCallback((_e: React.TouchEvent, date: Date) => {
     // Проверяем, что это мобильное устройство (ширина экрана <= 768px)
     if (window.innerWidth > 768) return;
     
@@ -317,9 +324,9 @@ const Admin: React.FC = () => {
       handleToggleDayStatus(date);
     }, 600); // 600ms для long press
     longPressTimerRef.current = timer;
-  };
+  }, [handleToggleDayStatus]);
 
-  const handleTouchEnd = (_e: React.TouchEvent, date: Date) => {
+  const handleTouchEnd = useCallback((_e: React.TouchEvent, date: Date) => {
     // Проверяем, что это мобильное устройство
     if (window.innerWidth > 768) return;
     
@@ -349,7 +356,7 @@ const Admin: React.FC = () => {
       setIsLongPressing(false);
       longPressTriggeredRef.current = false;
     }, 100);
-  };
+  }, [workingDaysOverrides]);
 
   const handleTouchCancel = () => {
     if (longPressTimerRef.current) {
@@ -425,7 +432,7 @@ const Admin: React.FC = () => {
     });
 
     return [...emptyDays, ...days];
-  }, [currentMonth, workingDaysOverrides, selectedDate]);
+  }, [currentMonth, workingDaysOverrides, selectedDate, handleToggleDayStatus, handleTouchStart, handleTouchEnd, isLongPressing]);
 
   if (!isAuthenticated) {
     return (
