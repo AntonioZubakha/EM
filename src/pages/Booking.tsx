@@ -7,6 +7,7 @@ import pricelistData from '../data/pricelist.json';
 import { LocationIcon, PhoneIcon, SuccessIcon, CheckIcon, ClockIcon, CardIcon, GiftIcon, CalendarIcon } from '../components/Icons';
 import { trackBookingSubmit, trackBookingSuccess, trackBookingError, trackPhoneClick, trackTelegramClick } from '../utils/analytics';
 import { getBookedSlotsForDate, isSlotBooked, bookSlot, getBookedSlots } from '../utils/bookingSlots';
+import Modal from '../components/Modal';
 import './Booking.scss';
 
 const Booking: React.FC = () => {
@@ -21,6 +22,11 @@ const Booking: React.FC = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [bookedSlotsMap, setBookedSlotsMap] = useState<Record<string, string[]>>({});
+  const [modal, setModal] = useState<{ isOpen: boolean; title?: string; message: string; type?: 'error' | 'info' | 'success' | 'warning' }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
 
   // Загружаем занятые слоты при монтировании и при смене месяца
   useEffect(() => {
@@ -297,7 +303,11 @@ const Booking: React.FC = () => {
     
     // Проверка, что выбрана хотя бы одна услуга
     if (formData.services.length === 0) {
-      alert('Пожалуйста, выберите хотя бы одну услугу');
+      setModal({
+        isOpen: true,
+        message: 'Пожалуйста, выберите хотя бы одну услугу',
+        type: 'warning'
+      });
       return;
     }
     
@@ -306,7 +316,11 @@ const Booking: React.FC = () => {
       const totalDuration = calculateTotalDuration(formData.services);
       if (isProcedureEndsAfterWorkingHours(selectedTime, totalDuration)) {
         const durationText = formatDuration(totalDuration);
-        alert(`К сожалению, выбранные процедуры (${durationText}) не поместятся в рабочее время, так как закончатся после 21:00. Пожалуйста, выберите более ранний временной слот.`);
+        setModal({
+          isOpen: true,
+          message: `К сожалению, выбранные процедуры (${durationText}) не поместятся в рабочее время, так как закончатся после 21:00.\n\nПожалуйста, выберите более ранний временной слот.`,
+          type: 'warning'
+        });
         return;
       }
     }
@@ -316,7 +330,11 @@ const Booking: React.FC = () => {
       const totalDuration = calculateTotalDuration(formData.services);
       const isBooked = await isSlotBooked(selectedDate, selectedTime, totalDuration);
       if (isBooked) {
-        alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+        setModal({
+          isOpen: true,
+          message: 'К сожалению, это время уже занято. Пожалуйста, выберите другое время.',
+          type: 'error'
+        });
         setSelectedTime('');
         // Обновляем список занятых слотов
         const dateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -338,7 +356,12 @@ const Booking: React.FC = () => {
     if (!botToken || !chatId) {
       const errorMsg = 'Отсутствуют переменные окружения для Telegram бота';
       trackBookingError(errorMsg);
-      alert('Ошибка конфигурации: не настроены переменные окружения для Telegram бота. Обратитесь к администратору сайта.');
+      setModal({
+        isOpen: true,
+        title: 'Ошибка конфигурации',
+        message: 'Не настроены переменные окружения для Telegram бота. Обратитесь к администратору сайта.',
+        type: 'error'
+      });
       console.error('Отсутствуют переменные окружения: VITE_TELEGRAM_BOT_TOKEN или VITE_TELEGRAM_CHAT_ID');
       return;
     }
@@ -360,9 +383,17 @@ const Booking: React.FC = () => {
         const numberOfSlots = totalDuration > 0 ? Math.ceil(totalDuration / 30) : 1;
         if (numberOfSlots > 1) {
           const durationText = formatDuration(totalDuration);
-          alert(`К сожалению, не все необходимые слоты доступны (требуется ${durationText}). Пожалуйста, выберите другое время.`);
+          setModal({
+            isOpen: true,
+            message: `К сожалению, не все необходимые слоты доступны (требуется ${durationText}).\n\nПожалуйста, выберите другое время.`,
+            type: 'error'
+          });
         } else {
-          alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+          setModal({
+            isOpen: true,
+            message: 'К сожалению, это время уже занято. Пожалуйста, выберите другое время.',
+            type: 'error'
+          });
         }
         setSelectedTime('');
         // Обновляем список занятых слотов
@@ -426,14 +457,24 @@ const Booking: React.FC = () => {
         trackBookingError(errorMsg);
         console.error('Ошибка отправки в Telegram:', errorData);
         // Слот уже забронирован, но Telegram не отправился - уведомляем пользователя
-        alert('Запись забронирована, но произошла ошибка при отправке уведомления. Пожалуйста, свяжитесь со мной напрямую по телефону для подтверждения.');
+        setModal({
+          isOpen: true,
+          title: 'Запись забронирована',
+          message: 'Произошла ошибка при отправке уведомления. Пожалуйста, свяжитесь со мной напрямую по телефону для подтверждения.',
+          type: 'warning'
+        });
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Network error';
       trackBookingError(errorMsg);
       console.error('Ошибка при отправке заявки:', error);
       // Слот уже забронирован, но Telegram не отправился - уведомляем пользователя
-      alert('Запись забронирована, но произошла ошибка при отправке уведомления. Пожалуйста, свяжитесь со мной напрямую по телефону для подтверждения.');
+      setModal({
+        isOpen: true,
+        title: 'Запись забронирована',
+        message: 'Произошла ошибка при отправке уведомления. Пожалуйста, свяжитесь со мной напрямую по телефону для подтверждения.',
+        type: 'warning'
+      });
     }
   };
 
@@ -907,6 +948,15 @@ const Booking: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Модальное окно для уведомлений */}
+      <Modal
+        isOpen={modal.isOpen}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+      />
     </div>
   );
 };
