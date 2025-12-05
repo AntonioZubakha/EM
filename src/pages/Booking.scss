@@ -1,5 +1,9 @@
 .booking-section {
   position: relative;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .booking-intro {
@@ -48,6 +52,15 @@
     
     @media (max-width: 768px) {
       min-height: auto;
+      padding: 1rem;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 0.75rem;
+    }
+    
+    @media (max-width: 360px) {
+      padding: 0.5rem;
     }
   }
 }
@@ -95,6 +108,10 @@
   justify-content: space-between;
   margin-bottom: 1.5rem;
   
+  @media (max-width: 480px) {
+    margin-bottom: 1rem;
+  }
+  
   &__nav-btn {
     width: 36px;
     height: 36px;
@@ -109,6 +126,12 @@
     align-items: center;
     justify-content: center;
     
+    @media (max-width: 480px) {
+      width: 32px;
+      height: 32px;
+      font-size: 1.2rem;
+    }
+    
     &:hover {
       border-color: var(--primary-rose);
       background: var(--primary-rose);
@@ -122,6 +145,10 @@
     color: var(--text-primary);
     margin: 0;
     text-transform: capitalize;
+    
+    @media (max-width: 480px) {
+      font-size: 1.2rem;
+    }
   }
 }
 
@@ -131,12 +158,32 @@
   gap: 0.5rem;
   margin-bottom: 1rem;
   
+  @media (max-width: 480px) {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 360px) {
+    gap: 0.15rem;
+  }
+  
   &__day {
     text-align: center;
     font-weight: 700; // Увеличено
     font-size: 1.1rem; // Увеличено
     color: var(--text-primary); // Более контрастный
     padding: 0.7rem; // Увеличено
+    
+    @media (max-width: 480px) {
+      font-size: 0.75rem;
+      padding: 0.4rem 0.25rem;
+      font-weight: 600;
+    }
+    
+    @media (max-width: 360px) {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.15rem;
+    }
   }
 }
 
@@ -145,6 +192,15 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
   margin-bottom: 1.5rem;
+  
+  @media (max-width: 480px) {
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 360px) {
+    gap: 0.15rem;
+  }
 }
 
 .calendar-day {
@@ -161,6 +217,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  @media (max-width: 480px) {
+    border-width: 2px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+  }
+  
+  @media (max-width: 360px) {
+    border-width: 1.5px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+  }
   
   &.work-day {
     background: var(--gradient-soft);
@@ -180,6 +249,11 @@
     border-color: var(--primary-gold-dark); // Более насыщенный
     border-width: 3px; // Более толстая рамка
     box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.4); // Более заметная тень
+    
+    @media (max-width: 480px) {
+      border-width: 2px;
+      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4);
+    }
   }
   
   &.past-day {
@@ -489,6 +563,110 @@
   &::placeholder {
     color: var(--text-tertiary); // Более контрастный
     font-size: 1.1rem; // Увеличено
+  }
+}
+
+.form-services {
+  margin-bottom: 1rem;
+  
+  &__label {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+  
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  &__select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    position: relative;
+  }
+  
+  &__select {
+    flex: 1;
+    margin: 0;
+  }
+  
+  &__duration-badge {
+    padding: 0.5rem 0.75rem;
+    background: var(--gradient-soft);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    border: 1px solid var(--border-medium);
+  }
+  
+  &__remove-btn {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--border-medium);
+    background: var(--surface-primary);
+    border-radius: var(--radius-sm);
+    color: var(--text-error, #dc3545);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    
+    &:hover {
+      border-color: var(--text-error, #dc3545);
+      background: var(--text-error, #dc3545);
+      color: var(--text-white);
+    }
+  }
+  
+  &__add-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px dashed var(--border-medium);
+    background: transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    
+    &:hover {
+      border-color: var(--primary-rose);
+      background: var(--gradient-soft);
+      color: var(--primary-rose-dark);
+    }
+  }
+  
+  &__summary {
+    padding: 0.75rem 1rem;
+    background: var(--gradient-soft);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-medium);
+  }
+  
+  &__total {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 }
 

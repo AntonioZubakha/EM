@@ -54,7 +54,7 @@ const PriceList: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Таблица услуг */}
+      {/* Таблица услуг - десктоп, карточки - мобильные */}
       <motion.div
         key={activeCategory}
         initial={{ opacity: 0, y: 20 }}
@@ -62,7 +62,8 @@ const PriceList: React.FC = () => {
         transition={{ duration: 0.4 }}
         className="price-table-wrapper"
       >
-        <div className="card price-table-card">
+        {/* Десктопная таблица */}
+        <div className="card price-table-card price-table-card--desktop">
           <table className="price-table">
             <thead>
               <tr>
@@ -105,9 +106,7 @@ const PriceList: React.FC = () => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        // Отслеживание клика по кнопке записи
                         trackBookingClick(`PriceList: ${service.name}`);
-                        
                         const bookingElement = document.getElementById('booking');
                         if (bookingElement) {
                           bookingElement.scrollIntoView({ behavior: 'smooth' });
@@ -121,6 +120,49 @@ const PriceList: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Мобильные карточки */}
+        <div className="price-cards price-cards--mobile">
+          {pricelistData[activeCategory].map((service, index) => (
+            <motion.div
+              key={service.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              className="card price-card"
+            >
+              <div className="price-card__header">
+                <h3 className="price-card__title">{service.name}</h3>
+                <div className="price-card__price">{service.price}</div>
+              </div>
+              <div className="price-card__body">
+                <p className="price-card__description">{service.description}</p>
+                <div className="price-card__meta">
+                  <div className="price-card__meta-item">
+                    <ClockIcon size={18} color="var(--primary-rose)" />
+                    <span>{service.duration}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="price-card__footer">
+                <motion.button
+                  className="btn btn-primary"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    trackBookingClick(`PriceList: ${service.name}`);
+                    const bookingElement = document.getElementById('booking');
+                    if (bookingElement) {
+                      bookingElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  Записаться
+                </motion.button>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </motion.div>
 

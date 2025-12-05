@@ -691,6 +691,14 @@
   overflow-x: auto;
   padding: 0;
   border-radius: var(--radius-xl);
+  
+  &--desktop {
+    display: block;
+    
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
 }
 
 .price-table {
@@ -698,7 +706,10 @@
   border-collapse: collapse;
   font-size: 1.1rem;
   background: var(--surface-primary);
-  min-width: 800px;
+  
+  @media (min-width: 769px) {
+    min-width: 800px;
+  }
   
   thead {
     background: var(--gradient-primary);
@@ -838,69 +849,6 @@
     }
   }
   
-  .price-table {
-    font-size: 1rem;
-    display: block;
-    overflow-x: auto;
-    
-    thead,
-    tbody,
-    tr {
-      display: block;
-    }
-    
-    &__header {
-      padding: 1.2rem 1rem;
-      font-size: 1.1rem;
-      
-      &--service {
-        width: 25%;
-      }
-      
-      &--description {
-        width: 35%;
-      }
-      
-      &--duration {
-        width: 15%;
-      }
-      
-      &--price {
-        width: 15%;
-      }
-      
-      &--action {
-        width: 10%;
-      }
-    }
-    
-    &__cell {
-      padding: 1.2rem 1rem;
-      font-size: 0.95rem;
-      
-      &--service {
-        font-size: 1.05rem;
-        width: 25%;
-      }
-      
-      &--description {
-        width: 35%;
-      }
-      
-      &--duration {
-        width: 15%;
-      }
-      
-      &--price {
-        font-size: 1.15rem;
-        width: 15%;
-      }
-      
-      &--action {
-        width: 10%;
-      }
-    }
-  }
   
   .btn-sm {
     padding: 0.7rem 1.2rem;
@@ -940,67 +888,133 @@
     }
   }
   
-  .price-table {
-    font-size: 0.9rem;
-    
-    &__header {
-      padding: 1rem 0.8rem;
-      font-size: 1rem;
-      flex-direction: column;
-      gap: 0.3rem;
-      
-      &--service {
-        min-width: 120px;
-      }
-      
-      &--description {
-        min-width: 180px;
-      }
-      
-      &--duration {
-        min-width: 90px;
-      }
-      
-      &--price {
-        min-width: 110px;
-      }
-      
-      &--action {
-        min-width: 120px;
-      }
-    }
-    
-    &__cell {
-      padding: 1rem 0.8rem;
-      font-size: 0.85rem;
-      
-      &--service {
-        font-size: 0.95rem;
-        min-width: 120px;
-      }
-      
-      &--description {
-        min-width: 180px;
-        font-size: 0.85rem;
-      }
-      
-      &--duration {
-        min-width: 90px;
-      }
-      
-      &--price {
-        font-size: 1rem;
-        min-width: 110px;
-      }
-      
-      &--action {
-        min-width: 120px;
-      }
-    }
-  }
   
   .btn-sm {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
+  }
+}
+
+// Мобильные карточки услуг
+.price-cards {
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  &--mobile {
+    @media (max-width: 768px) {
+      display: grid;
+    }
+  }
+}
+
+.price-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 2px solid var(--border-medium);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: var(--primary-rose);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-light);
+  }
+  
+  &__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+    line-height: 1.3;
+  }
+  
+  &__price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-rose-dark);
+    white-space: nowrap;
+    font-family: 'Playfair Display', serif;
+  }
+  
+  &__body {
+    flex: 1;
+    margin-bottom: 1.5rem;
+  }
+  
+  &__description {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+  }
+  
+  &__meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    background: var(--gradient-soft);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+  }
+  
+  &__footer {
+    margin-top: auto;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1.25rem;
+    
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    
+    &__title {
+      font-size: 1.15rem;
+    }
+    
+    &__price {
+      font-size: 1.25rem;
+    }
+    
+    &__description {
+      font-size: 0.95rem;
+    }
+    
+    &__meta-item {
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+    }
   }
 } 

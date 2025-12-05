@@ -16,7 +16,7 @@ const Booking: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    service: '',
+    services: [] as string[], // Массив выбранных услуг
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -174,11 +174,107 @@ const Booking: React.FC = () => {
     }
   }, [selectedTime]);
 
+  // Функция для парсинга длительности в минуты
+  const parseDurationToMinutes = (duration: string): number => {
+    let totalMinutes = 0;
+    
+    // Ищем часы
+    const hoursMatch = duration.match(/(\d+)\s*ч/);
+    if (hoursMatch) {
+      totalMinutes += parseInt(hoursMatch[1]) * 60;
+    }
+    
+    // Ищем минуты
+    const minutesMatch = duration.match(/(\d+)\s*мин/);
+    if (minutesMatch) {
+      totalMinutes += parseInt(minutesMatch[1]);
+    }
+    
+    return totalMinutes;
+  };
+
+  // Функция для расчета общего времени с учетом перерывов
+  const calculateTotalDuration = (selectedServices: string[]): number => {
+    if (selectedServices.length === 0) return 0;
+    
+    let totalMinutes = 0;
+    
+    // Находим длительность каждой услуги
+    selectedServices.forEach(serviceName => {
+      // Ищем в manicure
+      const manicureService = pricelistData.manicure.find(s => s.name === serviceName);
+      if (manicureService) {
+        totalMinutes += parseDurationToMinutes(manicureService.duration);
+      } else {
+        // Ищем в pedicure
+        const pedicureService = pricelistData.pedicure.find(s => s.name === serviceName);
+        if (pedicureService) {
+          totalMinutes += parseDurationToMinutes(pedicureService.duration);
+        }
+      }
+    });
+    
+    // Добавляем перерывы между процедурами (15 минут между каждой парой)
+    if (selectedServices.length > 1) {
+      totalMinutes += (selectedServices.length - 1) * 15;
+    }
+    
+    return totalMinutes;
+  };
+
+  // Форматирование времени в читаемый вид
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours === 0) {
+      return `${mins} мин.`;
+    } else if (mins === 0) {
+      return `${hours} ч.`;
+    } else {
+      return `${hours} ч. ${mins} мин.`;
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleServiceChange = (index: number, serviceName: string) => {
+    setFormData(prev => {
+      const newServices = [...prev.services];
+      if (serviceName === '') {
+        // Удаляем услугу
+        newServices.splice(index, 1);
+      } else {
+        // Обновляем услугу
+        newServices[index] = serviceName;
+        // Если это последний элемент и выбранная услуга не пустая, добавляем пустой элемент для следующего выбора
+        if (index === newServices.length - 1 && serviceName !== '') {
+          newServices.push('');
+        }
+      }
+      return {
+        ...prev,
+        services: newServices
+      };
+    });
+  };
+
+  const handleRemoveService = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      services: prev.services.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Получаем доступные услуги (исключая уже выбранные)
+  const getAvailableServices = (currentIndex: number) => {
+    const selectedServices = formData.services.filter((_, i) => i !== currentIndex);
+    return services.filter(service => !selectedServices.includes(service));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -198,9 +294,15 @@ const Booking: React.FC = () => {
       }
     }
     
+    // Проверка, что выбрана хотя бы одна услуга
+    if (formData.services.length === 0) {
+      alert('Пожалуйста, выберите хотя бы одну услугу');
+      return;
+    }
+    
     // Отслеживание отправки формы
     const dateStr = selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: ru }) : undefined;
-    trackBookingSubmit(formData.service, dateStr, selectedTime || undefined);
+    trackBookingSubmit(formData.services.join(', '), dateStr, selectedTime || undefined);
     
     // Используем переменные окружения Vite (префикс VITE_)
     const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
@@ -217,7 +319,8 @@ const Booking: React.FC = () => {
     
     // Сначала бронируем слот, потом отправляем в Telegram
     if (selectedDate && selectedTime) {
-      const booked = await bookSlot(selectedDate, selectedTime, formData.name, formData.phone, formData.service);
+      const servicesText = formData.services.join(', ');
+      const booked = await bookSlot(selectedDate, selectedTime, formData.name, formData.phone, servicesText);
       if (!booked) {
         // Если не удалось забронировать (например, уже занято), показываем ошибку
         alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
@@ -235,10 +338,16 @@ const Booking: React.FC = () => {
       setBookedSlotsMap(prev => ({ ...prev, [dateStr]: updatedSlots }));
     }
     
+    const totalDuration = calculateTotalDuration(formData.services);
+    const servicesText = formData.services.length === 1 
+      ? formData.services[0] 
+      : formData.services.join(', ');
+    const durationText = totalDuration > 0 ? `\n⏱ *Длительность:* ${formatDuration(totalDuration)}` : '';
+    
     const message = `🎯 *Новая заявка на запись*\n\n` +
       `👤 *Имя:* ${formData.name}\n` +
       `📞 *Телефон:* ${formData.phone}\n` +
-      `💅 *Услуга:* ${formData.service}\n` +
+      `💅 *Услуги:* ${servicesText}${durationText}\n` +
       `${selectedDate ? `📅 *Дата:* ${format(selectedDate, 'd MMMM yyyy', { locale: ru })}\n` : ''}` +
       `${selectedTime ? `⏰ *Время:* ${selectedTime}\n` : ''}` +
       `${formData.message ? `💬 *Сообщение:* ${formData.message}\n` : ''}` +
@@ -265,7 +374,7 @@ const Booking: React.FC = () => {
         setFormData({
           name: '',
           phone: '',
-          service: '',
+          services: [],
           message: ''
         });
         setSelectedDate(null);
@@ -484,19 +593,85 @@ const Booking: React.FC = () => {
                   onChange={handleChange}
                   className="form-input"
                 />
-                <select
-                  name="service"
-                  value={formData.service}
-                  onChange={handleChange}
-                  required
-                  className="form-input"
-                >
-                  <option value="">Выберите услугу *</option>
-                  {services.map((service, index) => (
-                    <option key={index} value={service}>{service}</option>
-                  ))}
-                </select>
-                {(selectedDate || selectedTime) && (
+                <div className="form-services">
+                  <label className="form-services__label">Выберите услуги *</label>
+                  <div className="form-services__list">
+                    {formData.services.map((selectedService, index) => {
+                      const availableServices = getAvailableServices(index);
+                      // Находим длительность выбранной услуги
+                      const manicureService = pricelistData.manicure.find(s => s.name === selectedService);
+                      const pedicureService = pricelistData.pedicure.find(s => s.name === selectedService);
+                      const serviceData = manicureService || pedicureService;
+                      const duration = serviceData?.duration || '';
+                      
+                      return (
+                        <div key={index} className="form-services__item">
+                          <div className="form-services__select-wrapper">
+                            <select
+                              value={selectedService}
+                              onChange={(e) => handleServiceChange(index, e.target.value)}
+                              className="form-input form-services__select"
+                              required={index === 0}
+                            >
+                              <option value="">Выберите услугу {index === 0 ? '*' : ''}</option>
+                              {availableServices.map((service) => (
+                                <option key={service} value={service}>{service}</option>
+                              ))}
+                            </select>
+                            {selectedService && duration && (
+                              <span className="form-services__duration-badge">{duration}</span>
+                            )}
+                            {formData.services.length > 1 && (
+                              <motion.button
+                                type="button"
+                                className="form-services__remove-btn"
+                                onClick={() => handleRemoveService(index)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                title="Удалить услугу"
+                              >
+                                ✕
+                              </motion.button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {formData.services.length === 0 && (
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            // Добавляем выбранную услугу и пустой элемент для следующего выбора
+                            setFormData(prev => ({
+                              ...prev,
+                              services: [e.target.value, '']
+                            }));
+                          }
+                        }}
+                        className="form-input form-services__select"
+                        required
+                      >
+                        <option value="">Выберите услугу *</option>
+                        {services.map((service) => (
+                          <option key={service} value={service}>{service}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  {formData.services.length > 0 && (
+                    <div className="form-services__summary">
+                      <span className="form-services__total">
+                        Выбрано: {formData.services.length} {formData.services.length === 1 ? 'услуга' : formData.services.length < 5 ? 'услуги' : 'услуг'}
+                        {(() => {
+                          const totalDuration = calculateTotalDuration(formData.services);
+                          return totalDuration > 0 ? ` • Общее время: ${formatDuration(totalDuration)}` : '';
+                        })()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {(selectedDate || selectedTime || formData.services.length > 0) && (
                   <div className="form-selected-info">
                     {selectedDate && (
                       <div className="form-selected-info__item">
@@ -508,6 +683,18 @@ const Booking: React.FC = () => {
                       <div className="form-selected-info__item">
                         <ClockIcon size={20} color="var(--primary-rose)" />
                         <span>Выбранное время: {selectedTime}</span>
+                      </div>
+                    )}
+                    {formData.services.length > 0 && (
+                      <div className="form-selected-info__item">
+                        <CardIcon size={20} color="var(--primary-rose)" />
+                        <span>
+                          Услуги: {formData.services.join(', ')}
+                          {(() => {
+                            const totalDuration = calculateTotalDuration(formData.services);
+                            return totalDuration > 0 ? ` (${formatDuration(totalDuration)})` : '';
+                          })()}
+                        </span>
                       </div>
                     )}
                   </div>

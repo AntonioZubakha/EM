@@ -509,6 +509,10 @@ img {
   @media (max-width: 480px) {
     padding: 1.5rem;
   }
+  
+  @media (max-width: 360px) {
+    padding: 1rem;
+  }
 }
 
 .card--highlight {
