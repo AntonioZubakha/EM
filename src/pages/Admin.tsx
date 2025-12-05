@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -41,6 +41,7 @@ const Admin: React.FC = () => {
       });
     }
   }, [isAuthenticated, currentMonth]);
+
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,16 +160,6 @@ const Admin: React.FC = () => {
     }
   };
 
-  // Генерация календаря
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const startingDayIndex = getDay(monthStart) === 0 ? 6 : getDay(monthStart) - 1;
-
-  const calendarDays = Array.from({ length: startingDayIndex }, (_, i) => (
-    <div key={`empty-${i}`} className="admin-calendar-day empty"></div>
-  ));
-
   const handleToggleDayStatus = async (date: Date) => {
     console.log('handleToggleDayStatus вызвана для:', format(date, 'yyyy-MM-dd'));
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -237,60 +228,75 @@ const Admin: React.FC = () => {
     }
   };
 
-  daysInMonth.forEach((day) => {
-    const isSelected = selectedDate && isSameDay(day, selectedDate);
-    const isCurrentToday = isToday(day);
-    const dateStr = format(day, 'yyyy-MM-dd');
-    
-    // Определяем статус дня
-    const hasOverride = dateStr in workingDaysOverrides;
-    const baseIsWorking = isWorkingDayBase(day);
-    const isWorking = hasOverride 
-      ? workingDaysOverrides[dateStr] === 'working'
-      : baseIsWorking;
+  // Генерация календаря с использованием useMemo для пересчета при изменении workingDaysOverrides
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    const startingDayIndex = getDay(monthStart) === 0 ? 6 : getDay(monthStart) - 1;
 
-    calendarDays.push(
-      <div
-        key={day.toString()}
-        className={`admin-calendar-day-wrapper ${isSelected ? 'selected' : ''}`}
-      >
-        <motion.button
-          onClick={() => {
-            // Обычный клик - выбор дня (только для рабочих дней)
-            if (isWorking) {
-              setSelectedDate(day);
-            }
-          }}
-          className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
-          whileHover={isWorking ? { scale: 1.05 } : {}}
-          whileTap={{ scale: 0.95 }}
-          title={hasOverride 
-            ? `${isWorking ? 'Рабочий' : 'Выходной'} (изменено). Клик по иконке для изменения`
-            : `${isWorking ? 'Рабочий день' : 'Выходной'}. Клик по иконке для изменения`}
+    const emptyDays = Array.from({ length: startingDayIndex }, (_, i) => (
+      <div key={`empty-${i}`} className="admin-calendar-day-wrapper empty"></div>
+    ));
+
+    const days = daysInMonth.map((day) => {
+      const isSelected = selectedDate && isSameDay(day, selectedDate);
+      const isCurrentToday = isToday(day);
+      const dateStr = format(day, 'yyyy-MM-dd');
+      
+      // Определяем статус дня
+      const hasOverride = dateStr in workingDaysOverrides;
+      const baseIsWorking = isWorkingDayBase(day);
+      const isWorking = hasOverride 
+        ? workingDaysOverrides[dateStr] === 'working'
+        : baseIsWorking;
+
+      return (
+        <div
+          key={day.toString()}
+          className={`admin-calendar-day-wrapper ${isSelected ? 'selected' : ''}`}
         >
-          <span>{format(day, 'd')}</span>
-        </motion.button>
-        <motion.button
-          className="admin-calendar-day__toggle-btn"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleToggleDayStatus(day);
-          }}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleToggleDayStatus(day);
-          }}
-          whileHover={{ scale: 1.2 }}
-          whileTap={{ scale: 0.9 }}
-          title="Переключить статус дня"
-        >
-          {hasOverride ? '⚙' : (isWorking ? '✓' : '✕')}
-        </motion.button>
-      </div>
-    );
-  });
+          <motion.button
+            onClick={() => {
+              // Обычный клик - выбор дня (только для рабочих дней)
+              if (isWorking) {
+                setSelectedDate(day);
+              }
+            }}
+            className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${hasOverride ? 'overridden' : ''}`}
+            whileHover={isWorking ? { scale: 1.05 } : {}}
+            whileTap={{ scale: 0.95 }}
+            title={hasOverride 
+              ? `${isWorking ? 'Рабочий' : 'Выходной'} (изменено). Клик по иконке для изменения`
+              : `${isWorking ? 'Рабочий день' : 'Выходной'}. Клик по иконке для изменения`}
+          >
+            <span>{format(day, 'd')}</span>
+          </motion.button>
+          <motion.button
+            className="admin-calendar-day__toggle-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleToggleDayStatus(day);
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleToggleDayStatus(day);
+            }}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            title="Переключить статус дня"
+            type="button"
+          >
+            {hasOverride ? '⚙' : (isWorking ? '✓' : '✕')}
+          </motion.button>
+        </div>
+      );
+    });
+
+    return [...emptyDays, ...days];
+  }, [currentMonth, workingDaysOverrides, selectedDate]);
 
   if (!isAuthenticated) {
     return (

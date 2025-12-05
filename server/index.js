@@ -206,39 +206,6 @@ app.delete('/api/booked-slots/:date/:time', async (req, res) => {
   }
 });
 
-// Инициализация файла с рабочими днями если его нет
-async function ensureWorkingDaysFile() {
-  try {
-    await fs.access(WORKING_DAYS_FILE);
-  } catch {
-    // Файл не существует, создаем пустой
-    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides: {} }, null, 2));
-  }
-}
-
-// Загрузить настройки рабочих дней
-async function loadWorkingDays() {
-  try {
-    const data = await fs.readFile(WORKING_DAYS_FILE, 'utf-8');
-    const json = JSON.parse(data);
-    return json.overrides || {};
-  } catch (error) {
-    console.error('Ошибка при чтении файла рабочих дней:', error);
-    return {};
-  }
-}
-
-// Сохранить настройки рабочих дней
-async function saveWorkingDays(overrides) {
-  try {
-    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides }, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Ошибка при сохранении файла рабочих дней:', error);
-    return false;
-  }
-}
-
 // API для управления рабочими днями
 
 // GET /api/working-days - Получить все переопределения рабочих дней

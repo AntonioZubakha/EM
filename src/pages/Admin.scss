@@ -201,17 +201,23 @@
   }
 
   &.working {
-    background: rgba(40, 167, 69, 0.1);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.25), rgba(40, 167, 69, 0.15));
     border-color: #28a745;
-    color: #155724;
+    border-width: 3px;
+    color: #0d4f1c;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
   }
 
   &.off {
-    background: rgba(220, 53, 69, 0.1);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.25), rgba(220, 53, 69, 0.15));
     border-color: #dc3545;
-    color: #721c24;
-    opacity: 0.6;
+    border-width: 3px;
+    color: #4a0e0e;
+    font-weight: 600;
+    opacity: 0.8;
     cursor: pointer; // Разрешаем клики для изменения статуса
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
   }
 
   &.overridden {
