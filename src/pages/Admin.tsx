@@ -7,8 +7,8 @@ import { isWorkingDayBase, setDayStatus, removeDayOverride, loadWorkingDaysOverr
 import pricelistData from '../data/pricelist.json';
 import './Admin.scss';
 
-const ADMIN_LOGIN = 'ElenaK';
-const ADMIN_PASSWORD = 'DanikMaster124$';
+const ADMIN_LOGIN = import.meta.env.VITE_ADMIN_LOGIN || 'admin';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -67,6 +67,11 @@ const Admin: React.FC = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    if (!ADMIN_PASSWORD) {
+      setError('Админ-панель не настроена. Обратитесь к администратору.');
+      return;
+    }
     
     if (login === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);

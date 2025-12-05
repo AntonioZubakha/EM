@@ -215,6 +215,26 @@ const Booking: React.FC = () => {
       return;
     }
     
+    // Сначала бронируем слот, потом отправляем в Telegram
+    if (selectedDate && selectedTime) {
+      const booked = await bookSlot(selectedDate, selectedTime, formData.name, formData.phone, formData.service);
+      if (!booked) {
+        // Если не удалось забронировать (например, уже занято), показываем ошибку
+        alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
+        setSelectedTime('');
+        // Обновляем список занятых слотов
+        const dateStr = format(selectedDate, 'yyyy-MM-dd');
+        const slots = await getBookedSlotsForDate(selectedDate);
+        setBookedSlotsMap(prev => ({ ...prev, [dateStr]: slots }));
+        return; // Не отправляем в Telegram, если бронирование не удалось
+      }
+      
+      // Обновляем локальный кэш занятых слотов
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const updatedSlots = await getBookedSlotsForDate(selectedDate);
+      setBookedSlotsMap(prev => ({ ...prev, [dateStr]: updatedSlots }));
+    }
+    
     const message = `🎯 *Новая заявка на запись*\n\n` +
       `👤 *Имя:* ${formData.name}\n` +
       `📞 *Телефон:* ${formData.phone}\n` +
@@ -225,6 +245,7 @@ const Booking: React.FC = () => {
       `\n_Время отправки: ${format(new Date(), 'd MMMM yyyy, HH:mm', { locale: ru })}_`;
     
     try {
+      // Теперь отправляем в Telegram (только если бронирование успешно)
       const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: {
@@ -238,22 +259,6 @@ const Booking: React.FC = () => {
       });
       
       if (response.ok) {
-        // Автоматически резервируем слот на сервере
-        if (selectedDate && selectedTime) {
-          const booked = await bookSlot(selectedDate, selectedTime, formData.name, formData.phone, formData.service);
-          if (booked) {
-            // Обновляем локальный кэш занятых слотов
-            const dateStr = format(selectedDate, 'yyyy-MM-dd');
-            const updatedSlots = await getBookedSlotsForDate(selectedDate);
-            setBookedSlotsMap(prev => ({ ...prev, [dateStr]: updatedSlots }));
-          } else {
-            // Если не удалось забронировать (например, уже занято), показываем ошибку
-            alert('К сожалению, это время уже занято. Пожалуйста, выберите другое время.');
-            setSelectedTime('');
-            return;
-          }
-        }
-        
         // Отслеживание успешной отправки
         trackBookingSuccess();
         setIsSubmitted(true);
@@ -271,13 +276,15 @@ const Booking: React.FC = () => {
         const errorMsg = `Telegram API error: ${errorData.description || 'Unknown error'}`;
         trackBookingError(errorMsg);
         console.error('Ошибка отправки в Telegram:', errorData);
-        alert('Произошла ошибка при отправке заявки. Пожалуйста, свяжитесь со мной напрямую по телефону.');
+        // Слот уже забронирован, но Telegram не отправился - уведомляем пользователя
+        alert('Запись забронирована, но произошла ошибка при отправке уведомления. Пожалуйста, свяжитесь со мной напрямую по телефону для подтверждения.');
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Network error';
       trackBookingError(errorMsg);
       console.error('Ошибка при отправке заявки:', error);
-      alert('Произошла ошибка при отправке заявки. Пожалуйста, свяжитесь со мной напрямую по телефону.');
+      // Слот уже забронирован, но Telegram не отправился - уведомляем пользователя
+      alert('Запись забронирована, но произошла ошибка при отправке уведомления. Пожалуйста, свяжитесь со мной напрямую по телефону для подтверждения.');
     }
   };
 

@@ -1,47 +1,58 @@
-# 🚀 Инструкция по деплою в продакшен
+# 🚀 Деплой в продакшен
 
-## Подготовка
+## Вариант 1: Render.com (простой способ)
 
-### 1. Настройка переменных окружения
+### Frontend (Static Site):
+1. **New** → **Static Site**
+2. Подключите GitHub репозиторий
+3. Настройки:
+   - **Build Command:** `npm install && npm run build`
+   - **Publish Directory:** `dist`
+   - **Environment Variables:**
+     ```
+     VITE_TELEGRAM_BOT_TOKEN=your_bot_token
+     VITE_TELEGRAM_CHAT_ID=your_chat_id
+     VITE_API_URL=https://your-backend-url.onrender.com/api
+     VITE_ADMIN_LOGIN=ElenaK
+     VITE_ADMIN_PASSWORD=your_password
+     VITE_ADMIN_TOKEN=your_token
+     ```
+   - **Redirects:** `/* /index.html 200`
 
-Создайте файл `.env` в корне проекта:
+### Backend (Web Service):
+1. **New** → **Web Service**
+2. Подключите тот же репозиторий
+3. Настройки:
+   - **Root Directory:** `server`
+   - **Build Command:** `npm install`
+   - **Start Command:** `node index.js`
+   - **Environment Variables:**
+     ```
+     ADMIN_TOKEN=your_token (должен совпадать с VITE_ADMIN_TOKEN)
+     ```
+   - **Health Check Path:** `/api/health`
 
-```env
-VITE_TELEGRAM_BOT_TOKEN=your_bot_token_here
-VITE_TELEGRAM_CHAT_ID=your_chat_id_here
-```
+⚠️ **Важно:** Сначала деплойте Backend, получите его URL, затем обновите `VITE_API_URL` во Frontend.
 
-### 2. Сборка проекта
+---
 
+## Вариант 2: VPS (для продакшена)
+
+### Frontend:
 ```bash
-npm install
 npm run build
+# Загрузите dist/ на хостинг (Apache/Nginx)
 ```
 
-После сборки в папке `dist/` будет готовый к деплою сайт.
-
-### 3. Проверка сборки локально
-
+### Backend:
 ```bash
-npm run preview
+cd server
+npm install --production
+pm2 start index.js --name elena-api
+pm2 save
 ```
 
-Откройте `http://localhost:4173` и проверьте, что все работает.
-
-## Деплой на хостинг
-
-### Вариант 1: Apache сервер
-
-1. Загрузите содержимое папки `dist/` на сервер
-2. Скопируйте файл `public/.htaccess` в корень сайта (рядом с `index.html`)
-3. Убедитесь, что модули `mod_rewrite`, `mod_deflate`, `mod_expires` включены
-4. Настройте домен на папку с файлами
-
-### Вариант 2: Nginx
-
-1. Загрузите содержимое папки `dist/` на сервер
-2. Настройте Nginx конфигурацию:
-
+### Nginx конфигурация:
 ```nginx
 server {
     listen 80;
@@ -49,112 +60,32 @@ server {
     root /path/to/dist;
     index index.html;
 
-    # Gzip сжатие
-    gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-    # Кэширование
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # SPA роутинг
     location / {
         try_files $uri $uri/ /index.html;
     }
 
-    # Безопасность заголовков
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
+    location /api {
+        proxy_pass http://localhost:3001;
+        proxy_set_header Host $host;
+    }
 }
 ```
 
-3. Перезагрузите Nginx: `sudo nginx -s reload`
+---
 
-### Вариант 3: Vercel / Netlify
+## Переменные окружения
 
-1. Подключите репозиторий к платформе
-2. Настройте переменные окружения в панели управления
-3. Укажите команду сборки: `npm run build`
-4. Укажите папку вывода: `dist`
-5. Деплой произойдет автоматически
+**На клиенте (Render Static Site или .env):**
+- Все переменные с префиксом `VITE_*`
 
-## SEO проверка после деплоя
-
-### 1. Проверьте доступность файлов:
-
-- ✅ `https://elena-manicure.ru/robots.txt`
-- ✅ `https://elena-manicure.ru/sitemap.xml`
-- ✅ `https://elena-manicure.ru/index.html`
-
-### 2. Проверьте метатеги:
-
-Используйте инструменты:
-- [Google Rich Results Test](https://search.google.com/test/rich-results)
-- [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
-- [Twitter Card Validator](https://cards-dev.twitter.com/validator)
-
-### 3. Отправьте sitemap в Google:
-
-1. Зарегистрируйте сайт в [Google Search Console](https://search.google.com/search-console)
-2. Добавьте sitemap: `https://elena-manicure.ru/sitemap.xml`
-
-### 4. Проверьте производительность:
-
-- [Google PageSpeed Insights](https://pagespeed.web.dev/)
-- [GTmetrix](https://gtmetrix.com/)
-- [WebPageTest](https://www.webpagetest.org/)
-
-## Важные моменты
-
-### HTTPS обязателен!
-
-Убедитесь, что сайт работает по HTTPS. Это важно для:
-- SEO ранжирования
-- Безопасности
-- Работы некоторых API
-
-### Обновление sitemap.xml
-
-При изменении контента обновите дату в `public/sitemap.xml`:
-```xml
-<lastmod>2025-12-03</lastmod>
-```
-
-### Мониторинг
-
-Настройте мониторинг:
-- Google Analytics
-- Яндекс.Метрика
-- Uptime мониторинг (UptimeRobot, Pingdom)
-
-## Оптимизация изображений
-
-Перед деплоем рекомендуется оптимизировать изображения:
-
-```bash
-# Используйте инструменты типа:
-# - ImageOptim (Mac)
-# - TinyPNG (онлайн)
-# - Squoosh (онлайн)
-```
-
-Рекомендуемые форматы:
-- WebP для современных браузеров
-- JPEG для фотографий
-- PNG для изображений с прозрачностью
-
-## Резервное копирование
-
-Настройте автоматическое резервное копирование:
-- База данных (если будет)
-- Файлы сайта
-- Конфигурационные файлы
+**На сервере (Render Web Service или server/.env):**
+- `ADMIN_TOKEN` (должен совпадать с `VITE_ADMIN_TOKEN`)
 
 ---
 
-**Готово!** Ваш сайт готов к продакшену 🎉
+## Проверка после деплоя
 
-
+1. Frontend открывается
+2. Форма записи работает
+3. API отвечает: `https://your-api-url/api/health`
+4. Админ-панель работает (проверьте удаление записи)

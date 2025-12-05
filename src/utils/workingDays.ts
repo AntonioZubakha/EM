@@ -99,12 +99,14 @@ export const isWorkingDay = async (date: Date): Promise<boolean> => {
 export const setDayStatus = async (date: Date, status: 'working' | 'off'): Promise<boolean> => {
   try {
     const dateStr = format(date, 'yyyy-MM-dd');
+    const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
     console.log('setDayStatus: отправка запроса', { dateStr, status, API_BASE_URL });
     
     const response = await fetch(`${API_BASE_URL}/working-days/${dateStr}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-admin-token': adminToken || '',
       },
       body: JSON.stringify({ status }),
     });
@@ -135,8 +137,12 @@ export const setDayStatus = async (date: Date, status: 'working' | 'off'): Promi
 export const removeDayOverride = async (date: Date): Promise<boolean> => {
   try {
     const dateStr = format(date, 'yyyy-MM-dd');
+    const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
     const response = await fetch(`${API_BASE_URL}/working-days/${dateStr}`, {
       method: 'DELETE',
+      headers: {
+        'x-admin-token': adminToken || '',
+      },
     });
     
     if (!response.ok) {

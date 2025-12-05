@@ -111,9 +111,13 @@ export const bookSlot = async (
 export const releaseSlot = async (date: Date, time: string): Promise<boolean> => {
   try {
     const dateStr = formatDate(date);
+    const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
     
     const response = await fetch(`${API_BASE_URL}/booked-slots/${dateStr}/${time}`, {
       method: 'DELETE',
+      headers: {
+        'x-admin-token': adminToken || '',
+      },
     });
     
     if (!response.ok) {

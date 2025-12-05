@@ -147,9 +147,39 @@ app.post('/api/booked-slots', async (req, res) => {
       return res.status(400).json({ error: 'Неверный формат даты. Используйте YYYY-MM-DD' });
     }
     
+    // Проверка валидности даты
+    const dateObj = new Date(date + 'T00:00:00');
+    if (isNaN(dateObj.getTime()) || dateObj.toISOString().split('T')[0] !== date) {
+      return res.status(400).json({ error: 'Невалидная дата' });
+    }
+    
+    // Проверка, что дата не в прошлом
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (dateObj < today) {
+      return res.status(400).json({ error: 'Нельзя бронировать на прошедшую дату' });
+    }
+    
     // Проверка формата времени (HH:MM)
     if (!/^\d{2}:\d{2}$/.test(time)) {
       return res.status(400).json({ error: 'Неверный формат времени. Используйте HH:MM' });
+    }
+    
+    // Проверка валидности времени
+    const [hours, minutes] = time.split(':').map(Number);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+      return res.status(400).json({ error: 'Невалидное время' });
+    }
+    
+    // Простая валидация длины полей
+    if (name && name.length > 100) {
+      return res.status(400).json({ error: 'Имя слишком длинное' });
+    }
+    if (phone && phone.length > 20) {
+      return res.status(400).json({ error: 'Телефон слишком длинный' });
+    }
+    if (service && service.length > 200) {
+      return res.status(400).json({ error: 'Название услуги слишком длинное' });
     }
     
     const slots = await loadBookedSlots();
@@ -174,6 +204,12 @@ app.post('/api/booked-slots', async (req, res) => {
     const saved = await saveBookedSlots(slots);
     
     if (!saved) {
+      // Если не удалось сохранить, проверяем еще раз (защита от race condition)
+      const slotsAfter = await loadBookedSlots();
+      const isBookedAfter = slotsAfter.some(slot => slot.date === date && slot.time === time);
+      if (isBookedAfter) {
+        return res.status(409).json({ error: 'Это время уже занято' });
+      }
       return res.status(500).json({ error: 'Ошибка при сохранении записи' });
     }
     
@@ -184,8 +220,24 @@ app.post('/api/booked-slots', async (req, res) => {
   }
 });
 
-// DELETE /api/booked-slots/:date/:time - Удалить запись
-app.delete('/api/booked-slots/:date/:time', async (req, res) => {
+// Простая проверка токена для админских операций
+const checkAdminToken = (req, res, next) => {
+  const token = req.headers['x-admin-token'];
+  const expectedToken = process.env.ADMIN_TOKEN;
+  
+  if (!expectedToken) {
+    return res.status(500).json({ error: 'Админ-панель не настроена' });
+  }
+  
+  if (token === expectedToken) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+// DELETE /api/booked-slots/:date/:time - Удалить запись (только для админа)
+app.delete('/api/booked-slots/:date/:time', checkAdminToken, async (req, res) => {
   try {
     const { date, time } = req.params;
     
@@ -226,8 +278,8 @@ app.get('/api/working-days', async (req, res) => {
   }
 });
 
-// POST /api/working-days/:date - Установить статус дня (working/off)
-app.post('/api/working-days/:date', async (req, res) => {
+// POST /api/working-days/:date - Установить статус дня (working/off) (только для админа)
+app.post('/api/working-days/:date', checkAdminToken, async (req, res) => {
   try {
     const { date } = req.params;
     const { status } = req.body; // 'working' или 'off'
@@ -255,8 +307,8 @@ app.post('/api/working-days/:date', async (req, res) => {
   }
 });
 
-// DELETE /api/working-days/:date - Удалить переопределение (вернуть к автоматическому)
-app.delete('/api/working-days/:date', async (req, res) => {
+// DELETE /api/working-days/:date - Удалить переопределение (вернуть к автоматическому) (только для админа)
+app.delete('/api/working-days/:date', checkAdminToken, async (req, res) => {
   try {
     const { date } = req.params;
     
