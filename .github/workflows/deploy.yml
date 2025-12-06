@@ -17,54 +17,6 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-# GitHub Actions workflow для автоматического деплоя на GitHub Pages
-# Запускается при push в main ветку
-
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches:
-      - main  # Запускается при push в main ветку
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     
     steps:
       - name: Checkout
@@ -82,15 +34,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Переменные окружения из GitHub Secrets
-          # Настройте их в Settings → Secrets and variables → Actions
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_ADMIN_LOGIN: ${{ secrets.VITE_ADMIN_LOGIN }}
-          VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
-          VITE_ADMIN_TOKEN: ${{ secrets.VITE_ADMIN_TOKEN }}
-          # Telegram переменные (если используются на фронтенде)
-          VITE_TELEGRAM_BOT_TOKEN: ${{ secrets.VITE_TELEGRAM_BOT_TOKEN }}
-          VITE_TELEGRAM_CHAT_ID: ${{ secrets.VITE_TELEGRAM_CHAT_ID }}
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
