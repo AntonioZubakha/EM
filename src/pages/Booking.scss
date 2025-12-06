@@ -1,9 +1,14 @@
 .booking-section {
   position: relative;
   overflow-x: hidden;
+  overflow-y: visible; // убираем внутреннюю вертикальную прокрутку
   width: 100%;
   max-width: 100vw;
   box-sizing: border-box;
+}
+
+#booking {
+  overflow: visible; // секция не должна иметь собственную прокрутку
 }
 
 .booking-intro {
