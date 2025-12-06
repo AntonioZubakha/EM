@@ -4,6 +4,8 @@ import { LocationIcon, PhoneIcon } from '../components/Icons';
 import { trackPhoneClick, trackTelegramClick } from '../utils/analytics';
 import './Contacts.scss';
 
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
 const Contacts: React.FC = () => {
   const phoneNumber = '8-916-142-78-95';
   const telegramLink = `https://t.me/${phoneNumber.replace(/[-\s]/g, '')}`;
@@ -38,9 +40,9 @@ const Contacts: React.FC = () => {
             viewport={{ once: true }}
             className="contacts-card__facade"
           >
-            <img 
-              src="/facade-building.png" 
-              alt="Фасад здания" 
+            <img
+              src={withBase('facade-building.png')}
+              alt="Фасад здания"
               className="contacts-card__facade-image"
               loading="lazy"
             />

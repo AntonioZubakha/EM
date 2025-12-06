@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import aboutData from '../data/about.json';
 import './About.scss';
 
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
 const About: React.FC = () => {
   // Функция для правильного склонения слова "год"
   const getYearWord = (years: number): string => {
@@ -67,9 +69,9 @@ const About: React.FC = () => {
           className="about-visual"
         >
           <div className="about-visual__image-container">
-            <img 
-              src={aboutData.photo} 
-              alt="Елена Курганова - Мастер ногтевого сервиса с 21-летним опытом работы" 
+            <img
+              src={withBase(aboutData.photo)}
+              alt="Елена Курганова - Мастер ногтевого сервиса с 21-летним опытом работы"
               className="about-visual__image"
               loading="lazy"
               width="420"
