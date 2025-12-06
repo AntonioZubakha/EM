@@ -10,6 +10,9 @@ import './Admin.scss';
 const ADMIN_LOGIN = import.meta.env.VITE_ADMIN_LOGIN || 'admin';
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
+const AUTH_PERSIST_KEY = 'admin_auth_persist';
+const AUTH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
+
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [login, setLogin] = useState('');
@@ -57,11 +60,27 @@ const Admin: React.FC = () => {
     return serviceList;
   }, []);
 
-  // Проверка авторизации при загрузке
+  // Проверка авторизации при загрузке (с учётом "запомнить на неделю")
   useEffect(() => {
-    const auth = sessionStorage.getItem('admin_auth');
-    if (auth === 'true') {
+    const sessionAuth = sessionStorage.getItem('admin_auth');
+    if (sessionAuth === 'true') {
       setIsAuthenticated(true);
+      return;
+    }
+
+    try {
+      const persisted = localStorage.getItem(AUTH_PERSIST_KEY);
+      if (persisted) {
+        const parsed = JSON.parse(persisted) as { value: string; expires: number };
+        if (parsed.value === 'true' && parsed.expires > Date.now()) {
+          setIsAuthenticated(true);
+          sessionStorage.setItem('admin_auth', 'true'); // обновляем сессию
+        } else if (parsed.expires <= Date.now()) {
+          localStorage.removeItem(AUTH_PERSIST_KEY);
+        }
+      }
+    } catch {
+      // игнорируем ошибки чтения/парсинга
     }
   }, []);
 
@@ -87,6 +106,10 @@ const Admin: React.FC = () => {
     if (login === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       sessionStorage.setItem('admin_auth', 'true');
+      localStorage.setItem(AUTH_PERSIST_KEY, JSON.stringify({
+        value: 'true',
+        expires: Date.now() + AUTH_TTL_MS,
+      }));
     } else {
       setError('Неверный логин или пароль');
     }
@@ -95,6 +118,7 @@ const Admin: React.FC = () => {
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('admin_auth');
+    localStorage.removeItem(AUTH_PERSIST_KEY);
     setSelectedDate(null);
     setBookedSlots([]);
   };
@@ -443,11 +467,13 @@ const Admin: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <h2>Админ-панель</h2>
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} autoComplete="on">
             <div className="admin-login__field">
               <label>Логин</label>
               <input
                 type="text"
+                name="username"
+                autoComplete="username"
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
                 required
@@ -458,6 +484,8 @@ const Admin: React.FC = () => {
               <label>Пароль</label>
               <input
                 type="password"
+                name="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
