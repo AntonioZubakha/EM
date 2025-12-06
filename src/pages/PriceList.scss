@@ -738,9 +738,7 @@
     &--duration {
       min-width: 120px;
       width: 15%;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      text-align: center; // оставить ячейку таблицей для корректной линии
     }
     
     &--price {
