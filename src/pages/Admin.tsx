@@ -290,10 +290,11 @@ const Admin: React.FC = () => {
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const servicesText = slotFormData.services.length
-        ? slotFormData.services.join(', ')
+      const selectedServices = slotFormData.services.filter(Boolean);
+      const servicesText = selectedServices.length
+        ? selectedServices.join(', ')
         : slotFormData.note || 'Закрыто администратором';
-      const totalDuration = calculateTotalDuration(slotFormData.services);
+      const totalDuration = calculateTotalDuration(selectedServices);
       const durationMinutes = totalDuration > 0 ? totalDuration : 30;
       const slotsToBook = getNextTimeSlots(slotFormData.time, durationMinutes);
       
@@ -710,30 +711,56 @@ const Admin: React.FC = () => {
                   <div className="admin-slot-form__field">
                     <label>Услуги (можно несколько)</label>
                     <div className="admin-slot-form__services">
-                      {allServices.map((service, index) => {
+                      {(slotFormData.services.length ? slotFormData.services : ['']).map((service, idx) => {
                         const manicureService = pricelistData.manicure.find(s => s.name === service);
                         const pedicureService = pricelistData.pedicure.find(s => s.name === service);
                         const durationLabel = manicureService?.duration || pedicureService?.duration || '';
-                        const isChecked = slotFormData.services.includes(service);
                         return (
-                          <label key={index} className="admin-slot-form__service-item">
-                            <input
-                              type="checkbox"
-                              checked={isChecked}
+                          <div key={idx} className="admin-slot-form__service-row">
+                            <select
+                              value={service}
                               onChange={(e) => {
+                                const value = e.target.value;
                                 setSlotFormData(prev => {
-                                  const next = e.target.checked
-                                    ? [...prev.services, service]
-                                    : prev.services.filter(s => s !== service);
+                                  const next = [...(prev.services.length ? prev.services : [''])];
+                                  next[idx] = value;
                                   return { ...prev, services: next };
                                 });
                               }}
-                            />
-                            <span>{service}{durationLabel ? ` (${durationLabel})` : ''}</span>
-                          </label>
+                              className="admin-slot-form__select"
+                            >
+                              <option value="">Выберите услугу</option>
+                              {allServices.map((s, i) => (
+                                <option key={i} value={s}>{s}</option>
+                              ))}
+                            </select>
+                            {durationLabel && <span className="admin-slot-form__duration">{durationLabel}</span>}
+                            { (slotFormData.services.length ? slotFormData.services : ['']).length > 1 && (
+                              <button
+                                type="button"
+                                className="admin-slot-form__remove"
+                                onClick={() => {
+                                  setSlotFormData(prev => {
+                                    const next = [...(prev.services.length ? prev.services : [''])];
+                                    next.splice(idx, 1);
+                                    return { ...prev, services: next };
+                                  });
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
+                    <button
+                      type="button"
+                      className="btn btn-secondary admin-slot-form__add"
+                      onClick={() => setSlotFormData(prev => ({ ...prev, services: [...prev.services, ''] }))}
+                    >
+                      Добавить услугу
+                    </button>
                   </div>
                   <div className="admin-slot-form__field">
                     <label>Комментарий / дополнительная услуга (опционально)</label>
@@ -748,7 +775,8 @@ const Admin: React.FC = () => {
                     <span>Итого длительность: </span>
                     <strong>
                       {(() => {
-                        const total = calculateTotalDuration(slotFormData.services);
+                        const selected = slotFormData.services.filter(Boolean);
+                        const total = calculateTotalDuration(selected);
                         const hours = Math.floor(total / 60);
                         const mins = total % 60;
                         if (total === 0) return '30 мин. (по умолчанию)';
