@@ -12,15 +12,17 @@ import 'swiper/css/pagination';
 
 import './Cabinet.scss';
 
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
 const Cabinet: React.FC = () => {
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
   const cabinetPhotos = [
-    { img: '/5427244503883969651.jpg', alt: 'Кабинет мастера' },
-    { img: '/5427244503883969652.jpg', alt: 'Оборудование и стерилизация' },
-    { img: '/5429213501576052044.jpg', alt: 'Продукция CND Shellac' },
-    { img: '/5429471586160868689.jpg', alt: 'Рабочее место мастера' },
-    { img: '/5300909892006776642.jpg', alt: 'Кабинет мастера' },
+    { img: withBase('5427244503883969651.jpg'), alt: 'Кабинет мастера' },
+    { img: withBase('5427244503883969652.jpg'), alt: 'Оборудование и стерилизация' },
+    { img: withBase('5429213501576052044.jpg'), alt: 'Продукция CND Shellac' },
+    { img: withBase('5429471586160868689.jpg'), alt: 'Рабочее место мастера' },
+    { img: withBase('5300909892006776642.jpg'), alt: 'Кабинет мастера' },
   ];
 
   const handleImageError = (index: number) => {

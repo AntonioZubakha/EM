@@ -12,15 +12,17 @@ import 'swiper/css/pagination';
 
 import './Portfolio.scss';
 
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
+
 const Portfolio: React.FC = () => {
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
 
   const works = [
-    { img: '/5298658092193091210.jpg', alt: 'Пример работы - маникюр' },
-    { img: '/5298658092193091224.jpg', alt: 'Пример работы - маникюр' },
-    { img: '/5298658092193091250.jpg', alt: 'Пример работы - маникюр' },
-    { img: '/5429213501576052045.jpg', alt: 'Пример работы - маникюр' },
-    { img: '/5298658092193091227.jpg', alt: 'Пример работы - педикюр' },
+    { img: withBase('5298658092193091210.jpg'), alt: 'Пример работы - маникюр' },
+    { img: withBase('5298658092193091224.jpg'), alt: 'Пример работы - маникюр' },
+    { img: withBase('5298658092193091250.jpg'), alt: 'Пример работы - маникюр' },
+    { img: withBase('5429213501576052045.jpg'), alt: 'Пример работы - маникюр' },
+    { img: withBase('5298658092193091227.jpg'), alt: 'Пример работы - педикюр' },
   ];
 
   const handleImageError = (index: number) => {
