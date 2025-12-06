@@ -54,16 +54,35 @@ npm run build        # Сборка для продакшена
 npm run preview      # Предпросмотр сборки
 ```
 
-## 📦 Деплой
+## 📦 Архитектура и деплой (актуально)
 
-См. подробную инструкцию в `DEPLOY.md`
+- **Frontend:** GitHub Pages (бренч `main`, workflow `.github/workflows/deploy.yml`, `base: '/EM/'` в `vite.config.ts`)
+  - Secrets (Actions): `VITE_API_URL` (например `https://elena-manicure-api.onrender.com/api`), при необходимости `VITE_ADMIN_*`, `VITE_TELEGRAM_*`.
+  - Адрес сайта: `https://antoniozubakha.github.io/EM/`
+- **Backend:** Render Web Service (`server/`, Node 18+)
+  - Env: `SUPABASE_URL`, `SUPABASE_KEY` (service role), `ADMIN_TOKEN`, `PORT` авто.
+  - URL: `https://elena-manicure-api.onrender.com`
+- **Хранилище:** Supabase (PostgreSQL)
+  - `booked_slots (id, date, time, name, phone, service, booked_at, unique(date,time))`
+  - `working_days (date PK, status working/off)`
 
-**Кратко:**
-- **Render.com:** Простой деплой через веб-интерфейс (2 сервиса)
-- **VPS:** Frontend → статический хостинг, Backend → PM2
+### Быстрый деплой фронта (GitHub Pages)
+1. Добавить секрет `VITE_API_URL` в Settings → Secrets → Actions.
+2. Push в `main` → workflow соберёт `dist` и задеплоит.
+3. Проверить `https://antoniozubakha.github.io/EM/`.
 
+### Быстрый деплой бэка (Render)
+1. Подключить репозиторий, root: `server`.
+2. Build: `npm install`; Start: `node index.js`.
+3. Env: `SUPABASE_URL`, `SUPABASE_KEY`, `ADMIN_TOKEN`, `PORT` авто.
+4. Проверка: `GET /api/health`.
 
-## 📚 Документация
+### Supabase
+- Создать таблицы через SQL Editor (см. выше).
+- Ключи: брать из Settings → API (service role на бэке, anon — только если понадобится на фронте).
 
-- `ENV_SETUP.md` - Настройка переменных окружения
-- `DEPLOY.md` - Инструкция по деплою
+### CORS (в `server/index.js`)
+- Разрешены: `https://elena-manicure.ru`, `https://www.elena-manicure.ru`, `https://antoniozubakha.github.io`, `http://localhost:5173`, `http://localhost:3050`.
+
+### Assets и базовый путь
+- Все пути к статикам/картинкам идут через `import.meta.env.BASE_URL` → важно для `/EM/` на GitHub Pages.
