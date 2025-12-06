@@ -38,7 +38,11 @@ app.use(express.json());
 
 // Периодическая очистка устаревших lock'ов (каждые 5 минут)
 setInterval(() => {
-  cleanupExpiredLocks().catch(console.error);
+  try {
+    cleanupExpiredLocks();
+  } catch (err) {
+    console.error('Ошибка очистки lock\'ов', err);
+  }
 }, 5 * 60 * 1000);
 
 // Фильтровать старые записи (старше 3 месяцев)
