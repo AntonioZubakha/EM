@@ -56,9 +56,12 @@ npm run preview      # Предпросмотр сборки
 
 ## 📦 Архитектура и деплой (актуально)
 
-- **Frontend:** GitHub Pages (бренч `main`, workflow `.github/workflows/deploy.yml`, `base: '/EM/'` в `vite.config.ts`)
-  - Secrets (Actions): `VITE_API_URL` (например `https://elena-manicure-api.onrender.com/api`), при необходимости `VITE_ADMIN_*`, `VITE_TELEGRAM_*`.
-  - Адрес сайта: `https://antoniozubakha.github.io/EM/`
+- **Frontend:** GitHub Pages (бренч `main`, workflow `.github/workflows/deploy.yml`, `base: '/'` в `vite.config.ts`)
+  - Secrets (Actions):  
+    - `VITE_API_URL` (например `https://elena-manicure-api.onrender.com/api` или `https://api.elena-manicure.ru/api`)  
+    - `VITE_ADMIN_LOGIN`, `VITE_ADMIN_PASSWORD`, `VITE_ADMIN_TOKEN`  
+    - `VITE_TELEGRAM_BOT_TOKEN`, `VITE_TELEGRAM_CHAT_ID`
+  - Прод: `https://elena-manicure.ru/`
 - **Backend:** Render Web Service (`server/`, Node 18+)
   - Env: `SUPABASE_URL`, `SUPABASE_KEY` (service role), `ADMIN_TOKEN`, `PORT` авто.
   - URL: `https://elena-manicure-api.onrender.com`
@@ -67,9 +70,9 @@ npm run preview      # Предпросмотр сборки
   - `working_days (date PK, status working/off)`
 
 ### Быстрый деплой фронта (GitHub Pages)
-1. Добавить секрет `VITE_API_URL` в Settings → Secrets → Actions.
+1. Добавить секреты в Settings → Secrets → Actions (см. выше).
 2. Push в `main` → workflow соберёт `dist` и задеплоит.
-3. Проверить `https://antoniozubakha.github.io/EM/`.
+3. Проверить `https://elena-manicure.ru/`.
 
 ### Быстрый деплой бэка (Render)
 1. Подключить репозиторий, root: `server`.
@@ -85,7 +88,4 @@ npm run preview      # Предпросмотр сборки
 - Разрешены: `https://elena-manicure.ru`, `https://www.elena-manicure.ru`, `https://antoniozubakha.github.io`, `http://localhost:5173`, `http://localhost:3050`.
 
 ### Assets и базовый путь
-- Все пути к статикам/картинкам идут через `import.meta.env.BASE_URL` → важно для `/EM/` на GitHub Pages.
-
-### Домены
-- Инструкции по подключению `elena-manicure.ru` и `api.elena-manicure.ru` см. в `DOMAIN_ROADMAP.md`.
+- Все пути к статикам/картинкам идут через `import.meta.env.BASE_URL`.
