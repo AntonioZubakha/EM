@@ -35,6 +35,11 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_ADMIN_LOGIN: ${{ secrets.VITE_ADMIN_LOGIN }}
+          VITE_ADMIN_PASSWORD: ${{ secrets.VITE_ADMIN_PASSWORD }}
+          VITE_ADMIN_TOKEN: ${{ secrets.VITE_ADMIN_TOKEN }}
+          VITE_TELEGRAM_BOT_TOKEN: ${{ secrets.VITE_TELEGRAM_BOT_TOKEN }}
+          VITE_TELEGRAM_CHAT_ID: ${{ secrets.VITE_TELEGRAM_CHAT_ID }}
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
