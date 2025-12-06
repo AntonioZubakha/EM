@@ -13,6 +13,59 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 const AUTH_PERSIST_KEY = 'admin_auth_persist';
 const AUTH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
 
+type SlotFormData = {
+  time: string;
+  name: string;
+  services: string[];
+  note: string;
+};
+
+const parseDurationToMinutes = (duration: string): number => {
+  let totalMinutes = 0;
+  const hoursMatch = duration.match(/(\d+)\s*ч/);
+  if (hoursMatch) {
+    totalMinutes += parseInt(hoursMatch[1]) * 60;
+  }
+  const minutesMatch = duration.match(/(\d+)\s*мин/);
+  if (minutesMatch) {
+    totalMinutes += parseInt(minutesMatch[1]);
+  }
+  return totalMinutes;
+};
+
+const calculateTotalDuration = (selectedServices: string[]): number => {
+  if (selectedServices.length === 0) return 0;
+  let totalMinutes = 0;
+  selectedServices.forEach(serviceName => {
+    const manicureService = pricelistData.manicure.find(s => s.name === serviceName);
+    if (manicureService) {
+      totalMinutes += parseDurationToMinutes(manicureService.duration);
+    } else {
+      const pedicureService = pricelistData.pedicure.find(s => s.name === serviceName);
+      if (pedicureService) {
+        totalMinutes += parseDurationToMinutes(pedicureService.duration);
+      }
+    }
+  });
+  return totalMinutes;
+};
+
+const getNextTimeSlots = (startTime: string, durationMinutes: number): string[] => {
+  const slots: string[] = [];
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const numberOfSlots = Math.ceil(durationMinutes / 30);
+  let currentMinutes = startHour * 60 + startMinute;
+  for (let i = 0; i < numberOfSlots; i++) {
+    const hour = Math.floor(currentMinutes / 60);
+    const minute = currentMinutes % 60;
+    if (hour > 20 || (hour === 20 && minute > 0)) break;
+    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    slots.push(timeStr);
+    currentMinutes += 30;
+  }
+  return slots;
+};
+
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [login, setLogin] = useState('');
@@ -26,7 +79,7 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [workingDaysOverrides, setWorkingDaysOverrides] = useState<Record<string, 'working' | 'off'>>({});
   const [showSlotForm, setShowSlotForm] = useState(false);
-  const [slotFormData, setSlotFormData] = useState({ time: '', name: '', service: '' });
+  const [slotFormData, setSlotFormData] = useState<SlotFormData>({ time: '', name: '', services: [], note: '' });
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggeredRef = useRef<boolean>(false);
   const [isLongPressing, setIsLongPressing] = useState(false);
@@ -225,7 +278,7 @@ const Admin: React.FC = () => {
     } else {
       // Показываем форму для ввода данных
       console.log('Показываем форму для слота:', time);
-      setSlotFormData({ time, name: '', service: '' });
+      setSlotFormData({ time, name: '', services: [], note: '' });
       setShowSlotForm(true);
     }
   };
@@ -237,6 +290,12 @@ const Admin: React.FC = () => {
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const servicesText = slotFormData.services.length
+        ? slotFormData.services.join(', ')
+        : slotFormData.note || 'Закрыто администратором';
+      const totalDuration = calculateTotalDuration(slotFormData.services);
+      const durationMinutes = totalDuration > 0 ? totalDuration : 30;
+      const slotsToBook = getNextTimeSlots(slotFormData.time, durationMinutes);
       
       const response = await fetch(`${API_BASE_URL}/booked-slots`, {
         method: 'POST',
@@ -247,21 +306,26 @@ const Admin: React.FC = () => {
           date: dateStr,
           time: slotFormData.time,
           name: slotFormData.name || 'Админ',
-          service: slotFormData.service || 'Закрыто администратором',
+          service: servicesText,
+          durationMinutes,
         }),
       });
       
       if (response.ok) {
-        setBookedSlots(prev => [...prev, slotFormData.time]);
-        setBookedSlotsInfo(prev => ({
-          ...prev,
-          [slotFormData.time]: {
-            name: slotFormData.name || 'Админ',
-            service: slotFormData.service || 'Закрыто администратором',
-          },
-        }));
+        const updatedSlots = await getBookedSlotsForDate(selectedDate);
+        setBookedSlots(updatedSlots);
+        setBookedSlotsInfo(prev => {
+          const updatedInfo = { ...prev };
+          slotsToBook.forEach(slot => {
+            updatedInfo[slot] = {
+              name: slotFormData.name || 'Админ',
+              service: servicesText,
+            };
+          });
+          return updatedInfo;
+        });
         setShowSlotForm(false);
-        setSlotFormData({ time: '', name: '', service: '' });
+        setSlotFormData({ time: '', name: '', services: [], note: '' });
       }
     } catch (error) {
       console.error('Ошибка при закрытии слота:', error);
@@ -644,17 +708,55 @@ const Admin: React.FC = () => {
                     />
                   </div>
                   <div className="admin-slot-form__field">
-                    <label>Процедура (необязательно)</label>
-                    <select
-                      value={slotFormData.service}
-                      onChange={(e) => setSlotFormData(prev => ({ ...prev, service: e.target.value }))}
-                      className="admin-slot-form__select"
-                    >
-                      <option value="">Выберите процедуру или оставьте пустым</option>
-                      {allServices.map((service, index) => (
-                        <option key={index} value={service}>{service}</option>
-                      ))}
-                    </select>
+                    <label>Услуги (можно несколько)</label>
+                    <div className="admin-slot-form__services">
+                      {allServices.map((service, index) => {
+                        const manicureService = pricelistData.manicure.find(s => s.name === service);
+                        const pedicureService = pricelistData.pedicure.find(s => s.name === service);
+                        const durationLabel = manicureService?.duration || pedicureService?.duration || '';
+                        const isChecked = slotFormData.services.includes(service);
+                        return (
+                          <label key={index} className="admin-slot-form__service-item">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                setSlotFormData(prev => {
+                                  const next = e.target.checked
+                                    ? [...prev.services, service]
+                                    : prev.services.filter(s => s !== service);
+                                  return { ...prev, services: next };
+                                });
+                              }}
+                            />
+                            <span>{service}{durationLabel ? ` (${durationLabel})` : ''}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="admin-slot-form__field">
+                    <label>Комментарий / дополнительная услуга (опционально)</label>
+                    <input
+                      type="text"
+                      value={slotFormData.note}
+                      onChange={(e) => setSlotFormData(prev => ({ ...prev, note: e.target.value }))}
+                      placeholder="Например: коррекция, дизайн и т.п."
+                    />
+                  </div>
+                  <div className="admin-slot-form__summary">
+                    <span>Итого длительность: </span>
+                    <strong>
+                      {(() => {
+                        const total = calculateTotalDuration(slotFormData.services);
+                        const hours = Math.floor(total / 60);
+                        const mins = total % 60;
+                        if (total === 0) return '30 мин. (по умолчанию)';
+                        if (hours === 0) return `${mins} мин.`;
+                        if (mins === 0) return `${hours} ч.`;
+                        return `${hours} ч. ${mins} мин.`;
+                      })()}
+                    </strong>
                   </div>
                   <div className="admin-slot-form__buttons">
                     <motion.button
@@ -669,7 +771,7 @@ const Admin: React.FC = () => {
                     <motion.button
                       onClick={() => {
                         setShowSlotForm(false);
-                        setSlotFormData({ time: '', name: '', service: '' });
+                        setSlotFormData({ time: '', name: '', services: [], note: '' });
                       }}
                       className="btn btn-secondary"
                       whileHover={{ scale: 1.05 }}
