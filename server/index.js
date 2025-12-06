@@ -1,88 +1,45 @@
 // Backend сервер для управления записями
+// Адаптирован для работы с Deta Cloud вместо файловой системы
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs').promises;
-const path = require('path');
+const {
+  loadBookedSlots,
+  saveBookedSlot,
+  saveBookedSlots,
+  deleteBookedSlot,
+  loadWorkingDays,
+  saveWorkingDay,
+  deleteWorkingDay,
+  lockSlot,
+  unlockSlot,
+  cleanupExpiredLocks
+} = require('./dbStorage');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-// Путь к файлу данных (работает и локально, и на Render)
-const BOOKED_SLOTS_FILE = path.join(__dirname, 'data', 'bookedSlots.json');
-const WORKING_DAYS_FILE = path.join(__dirname, 'data', 'workingDays.json');
+
+// Настройка CORS для GitHub Pages и кастомного домена
+const corsOptions = {
+  origin: [
+    'https://elena-manicure.ru',
+    'https://www.elena-manicure.ru',
+    'https://antoniozubakha.github.io', // для тестирования GitHub Pages
+    'http://localhost:3050', // для локальной разработки
+    'http://localhost:5173' // для Vite dev server
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-admin-token']
+};
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Создаем папку data если её нет
-const dataDir = path.join(__dirname, 'data');
-fs.mkdir(dataDir, { recursive: true }).catch(console.error);
-
-// Инициализация файла с записями если его нет
-async function ensureBookedSlotsFile() {
-  try {
-    await fs.access(BOOKED_SLOTS_FILE);
-  } catch {
-    // Файл не существует, создаем пустой
-    await fs.writeFile(BOOKED_SLOTS_FILE, JSON.stringify({ bookedSlots: [] }, null, 2));
-  }
-}
-
-// Инициализация файла с рабочими днями если его нет
-async function ensureWorkingDaysFile() {
-  try {
-    await fs.access(WORKING_DAYS_FILE);
-  } catch {
-    // Файл не существует, создаем пустой
-    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides: {} }, null, 2));
-  }
-}
-
-// Загрузить настройки рабочих дней
-async function loadWorkingDays() {
-  try {
-    const data = await fs.readFile(WORKING_DAYS_FILE, 'utf-8');
-    const json = JSON.parse(data);
-    return json.overrides || {};
-  } catch (error) {
-    console.error('Ошибка при чтении файла рабочих дней:', error);
-    return {};
-  }
-}
-
-// Сохранить настройки рабочих дней
-async function saveWorkingDays(overrides) {
-  try {
-    await fs.writeFile(WORKING_DAYS_FILE, JSON.stringify({ overrides }, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Ошибка при сохранении файла рабочих дней:', error);
-    return false;
-  }
-}
-
-// Загрузить все занятые слоты
-async function loadBookedSlots() {
-  try {
-    const data = await fs.readFile(BOOKED_SLOTS_FILE, 'utf-8');
-    const json = JSON.parse(data);
-    return json.bookedSlots || [];
-  } catch (error) {
-    console.error('Ошибка при чтении файла:', error);
-    return [];
-  }
-}
-
-// Сохранить занятые слоты
-async function saveBookedSlots(slots) {
-  try {
-    await fs.writeFile(BOOKED_SLOTS_FILE, JSON.stringify({ bookedSlots: slots }, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Ошибка при сохранении файла:', error);
-    return false;
-  }
-}
+// Периодическая очистка устаревших lock'ов (каждые 5 минут)
+setInterval(() => {
+  cleanupExpiredLocks().catch(console.error);
+}, 5 * 60 * 1000);
 
 // Фильтровать старые записи (старше 3 месяцев)
 function filterOldSlots(slots) {
@@ -162,6 +119,9 @@ function getNextTimeSlots(startTime, durationMinutes) {
 
 // POST /api/booked-slots - Добавить новую запись
 app.post('/api/booked-slots', async (req, res) => {
+  const slotsToBook = [];
+  const locksToUnlock = [];
+  
   try {
     const { date, time, name, phone, service, durationMinutes } = req.body;
     
@@ -223,21 +183,42 @@ app.post('/api/booked-slots', async (req, res) => {
       return res.status(400).json({ error: 'Выбранные процедуры не поместятся в рабочее время, так как закончатся после 21:00. Пожалуйста, выберите более ранний временной слот' });
     }
     
-    const slots = await loadBookedSlots();
-    
     // Вычисляем слоты (каждый слот = 30 минут)
-    const slotsToBook = getNextTimeSlots(time, duration);
+    const slotsToBookArray = getNextTimeSlots(time, duration);
+    
+    // Блокируем все необходимые слоты перед проверкой
+    for (const slotTime of slotsToBookArray) {
+      const locked = await lockSlot(date, slotTime);
+      if (!locked) {
+        // Если не удалось заблокировать, разблокируем уже заблокированные
+        for (const unlockSlotTime of locksToUnlock) {
+          await unlockSlot(date, unlockSlotTime);
+        }
+        return res.status(409).json({ error: `Время ${slotTime} уже занято или обрабатывается другим запросом` });
+      }
+      locksToUnlock.push(slotTime);
+      slotsToBook.push(slotTime);
+    }
+    
+    // Загружаем текущие слоты
+    const slots = await loadBookedSlots();
     
     // Проверяем, не заняты ли все необходимые слоты
     for (const slotTime of slotsToBook) {
       const isBooked = slots.some(slot => slot.date === date && slot.time === slotTime);
       if (isBooked) {
+        // Разблокируем все слоты перед возвратом ошибки
+        for (const unlockSlotTime of locksToUnlock) {
+          await unlockSlot(date, unlockSlotTime);
+        }
         return res.status(409).json({ error: `Время ${slotTime} уже занято` });
       }
     }
     
-    // Добавляем все необходимые слоты
+    // Сохраняем все необходимые слоты (каждый отдельно)
     const bookedSlots = [];
+    let allSaved = true;
+    
     for (const slotTime of slotsToBook) {
       const newSlot = {
         date,
@@ -247,14 +228,22 @@ app.post('/api/booked-slots', async (req, res) => {
         service: service || undefined,
         bookedAt: new Date().toISOString(),
       };
-      slots.push(newSlot);
+      
+      const saved = await saveBookedSlot(newSlot);
+      if (!saved) {
+        allSaved = false;
+        break;
+      }
       bookedSlots.push(newSlot);
     }
     
-    const saved = await saveBookedSlots(slots);
+    // Разблокируем все слоты после сохранения
+    for (const unlockSlotTime of locksToUnlock) {
+      await unlockSlot(date, unlockSlotTime);
+    }
     
-    if (!saved) {
-      // Если не удалось сохранить, проверяем еще раз (защита от race condition)
+    if (!allSaved) {
+      // Если не удалось сохранить, проверяем еще раз
       const slotsAfter = await loadBookedSlots();
       for (const slotTime of slotsToBook) {
         const isBookedAfter = slotsAfter.some(slot => slot.date === date && slot.time === slotTime);
@@ -267,6 +256,10 @@ app.post('/api/booked-slots', async (req, res) => {
     
     res.status(201).json({ success: true, slots: bookedSlots });
   } catch (error) {
+    // Разблокируем все слоты в случае ошибки
+    for (const unlockSlotTime of locksToUnlock) {
+      await unlockSlot(req.body.date, unlockSlotTime).catch(console.error);
+    }
     console.error('Ошибка при добавлении записи:', error);
     res.status(500).json({ error: 'Ошибка при добавлении записи' });
   }
@@ -293,20 +286,18 @@ app.delete('/api/booked-slots/:date/:time', checkAdminToken, async (req, res) =>
   try {
     const { date, time } = req.params;
     
+    // Проверяем, существует ли запись
     const slots = await loadBookedSlots();
-    const initialLength = slots.length;
+    const exists = slots.some(slot => slot.date === date && slot.time === time);
     
-    const filteredSlots = slots.filter(
-      slot => !(slot.date === date && slot.time === time)
-    );
-    
-    if (filteredSlots.length === initialLength) {
+    if (!exists) {
       return res.status(404).json({ error: 'Запись не найдена' });
     }
     
-    const saved = await saveBookedSlots(filteredSlots);
+    // Удаляем слот из Deta Base
+    const deleted = await deleteBookedSlot(date, time);
     
-    if (!saved) {
+    if (!deleted) {
       return res.status(500).json({ error: 'Ошибка при удалении записи' });
     }
     
@@ -344,10 +335,8 @@ app.post('/api/working-days/:date', checkAdminToken, async (req, res) => {
       return res.status(400).json({ error: 'Статус должен быть "working" или "off"' });
     }
     
-    const overrides = await loadWorkingDays();
-    overrides[date] = status;
-    
-    const saved = await saveWorkingDays(overrides);
+    // Сохраняем день отдельно в Deta Base
+    const saved = await saveWorkingDay(date, status);
     if (!saved) {
       return res.status(500).json({ error: 'Ошибка при сохранении статуса дня' });
     }
@@ -364,11 +353,9 @@ app.delete('/api/working-days/:date', checkAdminToken, async (req, res) => {
   try {
     const { date } = req.params;
     
-    const overrides = await loadWorkingDays();
-    delete overrides[date];
-    
-    const saved = await saveWorkingDays(overrides);
-    if (!saved) {
+    // Удаляем день из Deta Base
+    const deleted = await deleteWorkingDay(date);
+    if (!deleted) {
       return res.status(500).json({ error: 'Ошибка при удалении переопределения' });
     }
     
@@ -385,10 +372,13 @@ app.get('/api/health', (req, res) => {
 });
 
 // Инициализация при запуске
-Promise.all([ensureBookedSlotsFile(), ensureWorkingDaysFile()]).then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на порту ${PORT}`);
-    console.log(`📅 API для управления записями доступен на http://localhost:${PORT}/api`);
-  });
-}).catch(console.error);
+app.listen(PORT, () => {
+  console.log(`🚀 Сервер запущен на порту ${PORT}`);
+  console.log(`📅 API для управления записями доступен на http://localhost:${PORT}/api`);
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+    console.log(`☁️  Используется Supabase для хранения данных`);
+  } else {
+    console.warn(`⚠️  SUPABASE_URL или SUPABASE_KEY не установлены, сохранение работать не будет`);
+  }
+});
 
