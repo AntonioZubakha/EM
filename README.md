@@ -86,3 +86,6 @@ npm run preview      # Предпросмотр сборки
 
 ### Assets и базовый путь
 - Все пути к статикам/картинкам идут через `import.meta.env.BASE_URL` → важно для `/EM/` на GitHub Pages.
+
+### Домены
+- Инструкции по подключению `elena-manicure.ru` и `api.elena-manicure.ru` см. в `DOMAIN_ROADMAP.md`.
