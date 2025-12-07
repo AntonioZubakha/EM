@@ -7,10 +7,12 @@ import './Contacts.scss';
 const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
 
 const Contacts: React.FC = () => {
-  const phoneNumber = '8-916-142-78-95';
-  const telegramLink = `https://t.me/${phoneNumber.replace(/[-\s]/g, '')}`;
-  const whatsappLink = `https://wa.me/79161427895`;
-  const imoLink = `https://imo.im/79161427895`;
+  const phoneNumber = '+7 916 142-78-95';
+  const phoneRaw = phoneNumber.replace(/[^\d+]/g, '');
+  const phoneDigits = phoneRaw.replace(/^\+/, '');
+  const telegramLink = `https://t.me/${phoneDigits}`;
+  const whatsappLink = `https://wa.me/${phoneDigits}`;
+  const imoLink = `https://imo.im/${phoneDigits}`;
 
   return (
     <div className="container contacts-section">
@@ -69,7 +71,7 @@ const Contacts: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               onClick={() => {
                 trackPhoneClick();
-                window.open(`tel:${phoneNumber.replace(/[-\s]/g, '')}`);
+                window.open(`tel:${phoneRaw}`);
               }}
             >
               <PhoneIcon size={24} color="var(--primary-rose)" />
