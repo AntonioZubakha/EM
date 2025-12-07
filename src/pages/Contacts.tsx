@@ -10,9 +10,24 @@ const Contacts: React.FC = () => {
   const phoneNumber = '+7 916 142-78-95';
   const phoneRaw = phoneNumber.replace(/[^\d+]/g, '');
   const phoneDigits = phoneRaw.replace(/^\+/, '');
-  const telegramLink = `https://t.me/${phoneDigits}`;
+  const telegramWeb = `https://t.me/+${phoneDigits}`;
+  const telegramApp = `tg://resolve?phone=${phoneDigits}`;
   const whatsappLink = `https://wa.me/${phoneDigits}`;
   const imoLink = `https://imo.im/${phoneDigits}`;
+
+  const handleTelegramClick = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    trackTelegramClick();
+    // Пытаемся открыть приложение Telegram, при неудаче — веб
+    const fallback = () => window.open(telegramWeb, '_blank', 'noopener,noreferrer');
+    const timeout = setTimeout(fallback, 1200);
+    try {
+      window.location.href = telegramApp;
+    } catch {
+      clearTimeout(timeout);
+      fallback();
+    }
+  };
 
   return (
     <div className="container contacts-section">
@@ -82,17 +97,15 @@ const Contacts: React.FC = () => {
             </motion.div>
           </div>
           <div className="contacts-card__buttons">
-            <motion.a
-              href={telegramLink}
-              target="_blank"
-              rel="noopener noreferrer"
+            <motion.button
+              type="button"
               className="btn btn-primary"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => trackTelegramClick()}
+              onClick={handleTelegramClick}
             >
               Telegram
-            </motion.a>
+            </motion.button>
             <motion.a
               href={whatsappLink}
               target="_blank"
