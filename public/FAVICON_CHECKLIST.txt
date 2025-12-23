@@ -1,16 +1,18 @@
 📋 ЧЕКЛИСТ: Какие файлы нужно создать и разместить в папке public/
 
-✅ ОБЯЗАТЕЛЬНЫЕ:
-   [ ] favicon.ico (32×32px, формат ICO)
-   [ ] favicon.svg (векторный SVG)
-   [ ] favicon-16x16.png (16×16px)
-   [ ] favicon-32x32.png (32×32px)
-   [ ] apple-touch-icon.png (180×180px)
-   [ ] android-chrome-192x192.png (192×192px)
-   [ ] android-chrome-512x512.png (512×512px)
+✅ ОБЯЗАТЕЛЬНЫЕ (все созданы):
+   [x] favicon.ico (32×32px, формат ICO)
+   [x] favicon.svg (векторный SVG)
+   [x] favicon-16x16.png (16×16px)
+   [x] favicon-32x32.png (32×32px)
+   [x] apple-touch-icon.png (180×180px)
+   [x] android-chrome-192x192.png (192×192px)
+   [x] android-chrome-512x512.png (512×512px)
+   [x] site.webmanifest (Web App Manifest для PWA и Android)
+   [x] browserconfig.xml (конфигурация для Windows плиток)
 
 📌 ОПЦИОНАЛЬНЫЕ:
-   [ ] mstile-150x150.png (150×150px, для Windows)
+   [ ] mstile-150x150.png (150×150px, для Windows - можно создать на основе android-chrome-192x192.png)
 
 🛠️ КАК СОЗДАТЬ:
    1. Подготовьте исходное изображение 512×512px (PNG)

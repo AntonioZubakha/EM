@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Favicon и иконки для всех платформ -->
+    <!-- SVG favicon для современных браузеров (масштабируемый) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
     <!-- Базовый favicon для старых браузеров -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     
@@ -18,6 +21,13 @@
     <!-- Android Chrome Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+    
+    <!-- Web App Manifest для PWA и Android -->
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- Windows Tiles -->
+    <meta name="msapplication-TileColor" content="#f8d7da" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
     
     <!-- Тема для мобильных браузеров -->
     <meta name="theme-color" content="#f8d7da" />

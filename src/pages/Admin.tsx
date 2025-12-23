@@ -319,7 +319,7 @@ const Admin: React.FC = () => {
           const updatedInfo = { ...prev };
           slotsToBook.forEach(slot => {
             updatedInfo[slot] = {
-              name: slotFormData.name || 'Админ',
+            name: slotFormData.name || 'Админ',
               service: servicesText,
             };
           });
@@ -717,7 +717,7 @@ const Admin: React.FC = () => {
                         const durationLabel = manicureService?.duration || pedicureService?.duration || '';
                         return (
                           <div key={idx} className="admin-slot-form__service-row">
-                            <select
+                    <select
                               value={service}
                               onChange={(e) => {
                                 const value = e.target.value;
@@ -727,13 +727,13 @@ const Admin: React.FC = () => {
                                   return { ...prev, services: next };
                                 });
                               }}
-                              className="admin-slot-form__select"
-                            >
+                      className="admin-slot-form__select"
+                    >
                               <option value="">Выберите услугу</option>
                               {allServices.map((s, i) => (
                                 <option key={i} value={s}>{s}</option>
-                              ))}
-                            </select>
+                      ))}
+                    </select>
                             {durationLabel && <span className="admin-slot-form__duration">{durationLabel}</span>}
                             { (slotFormData.services.length ? slotFormData.services : ['']).length > 1 && (
                               <button
