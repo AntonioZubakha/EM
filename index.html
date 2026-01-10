@@ -5,22 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Favicon и иконки для всех платформ -->
+    <!-- Базовый favicon для старых браузеров (загружается первым) -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    
     <!-- SVG favicon для современных браузеров (масштабируемый) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    
-    <!-- Базовый favicon для старых браузеров -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     
     <!-- PNG иконки разных размеров -->
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
     
     <!-- Apple Touch Icon (iOS) -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    
-    <!-- Android Chrome Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
     
     <!-- Web App Manifest для PWA и Android -->
     <link rel="manifest" href="/site.webmanifest" />
@@ -48,6 +46,18 @@
         anonymize_ip: true,
         allow_ad_personalization_signals: false
       });
+    </script>
+    
+    <!-- GitHub Pages SPA redirect handler -->
+    <script>
+      // Обработка редиректа с 404.html для SPA роутинга на GitHub Pages
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, '', redirect);
+        }
+      })();
     </script>
     
     <!-- SEO метатеги -->
@@ -90,6 +100,7 @@
       "name": "Елена - Мастер ногтевого сервиса",
       "description": "Профессиональный маникюр и педикюр от мастера с 21-летним опытом работы",
       "url": "https://elena-manicure.ru",
+      "logo": "https://elena-manicure.ru/android-chrome-512x512.png",
       "image": "https://elena-manicure.ru/android-chrome-512x512.png",
       "telephone": "+79161427895",
       "address": {
