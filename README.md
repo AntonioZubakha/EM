@@ -21,7 +21,7 @@
 - 🖼️ **Оптимизация изображений**: lazy-load, фиксированные размеры для снижения CLS
 - 🛡️ **Админка**: авторизация с автоподстановкой, запоминание входа на 7 дней, ручное закрытие слотов/дней
 - 🧩 **Гибкий прайс**: переключатели категорий, мобильные карточки и десктопная таблица
-- 🌐 **Бэкенд на Render + Supabase**: API для бронирований, хранение слотов, блокировки от гонок
+- 🌐 **Бэкенд + Supabase**: API для бронирований, хранение слотов в PostgreSQL, блокировки от гонок
 - ⚙️ **CI/CD GitHub Pages**: деплой из main, секреты для API/GA/Telegram в Actions
 
 ## 🚀 Быстрый старт
@@ -60,38 +60,114 @@ npm run build        # Сборка для продакшена
 npm run preview      # Предпросмотр сборки
 ```
 
-## 📦 Архитектура и деплой (актуально)
+## 📦 Архитектура и деплой
 
-- **Frontend:** GitHub Pages (бренч `main`, workflow `.github/workflows/deploy.yml`, `base: '/'` в `vite.config.ts`)
-  - Secrets (Actions):  
-    - `VITE_API_URL` (например `https://elena-manicure-api.onrender.com/api` или `https://api.elena-manicure.ru/api`)  
-    - `VITE_ADMIN_LOGIN`, `VITE_ADMIN_PASSWORD`, `VITE_ADMIN_TOKEN`  
-    - `VITE_TELEGRAM_BOT_TOKEN`, `VITE_TELEGRAM_CHAT_ID`
-  - Прод: `https://elena-manicure.ru/`
-- **Backend:** Render Web Service (`server/`, Node 18+)
-  - Env: `SUPABASE_URL`, `SUPABASE_KEY` (service role), `ADMIN_TOKEN`, `PORT` авто.
-  - URL: `https://elena-manicure-api.onrender.com`
-- **Хранилище:** Supabase (PostgreSQL)
-  - `booked_slots (id, date, time, name, phone, service, booked_at, unique(date,time))`
-  - `working_days (date PK, status working/off)`
+### Frontend (GitHub Pages)
+- **Хостинг:** GitHub Pages
+- **Ветка:** `main` 
+- **Workflow:** `.github/workflows/deploy.yml`
+- **URL:** `https://elena-manicure.ru/`
 
-### Быстрый деплой фронта (GitHub Pages)
-1. Добавить секреты в Settings → Secrets → Actions (см. выше).
-2. Push в `main` → workflow соберёт `dist` и задеплоит.
-3. Проверить `https://elena-manicure.ru/`.
+**GitHub Secrets (Settings → Secrets → Actions):**
+- `VITE_API_URL` - URL вашего бэкенд API (например `http://localhost:3001/api` для разработки)
+- `VITE_ADMIN_LOGIN`, `VITE_ADMIN_PASSWORD`, `VITE_ADMIN_TOKEN` - данные для админ-панели
+- `VITE_TELEGRAM_BOT_TOKEN`, `VITE_TELEGRAM_CHAT_ID` - для уведомлений в Telegram
+- `VITE_GA_ID` - Google Analytics ID
 
-### Быстрый деплой бэка (Render)
-1. Подключить репозиторий, root: `server`.
-2. Build: `npm install`; Start: `node index.js`.
-3. Env: `SUPABASE_URL`, `SUPABASE_KEY`, `ADMIN_TOKEN`, `PORT` авто.
-4. Проверка: `GET /api/health`.
+**Деплой:**
+```bash
+git push origin main  # Автоматический деплой через GitHub Actions
+```
 
-### Supabase
-- Создать таблицы через SQL Editor (см. выше).
-- Ключи: брать из Settings → API (service role на бэке, anon — только если понадобится на фронте).
+### Backend (требует отдельного хостинга)
 
-### CORS (в `server/index.js`)
-- Разрешены: `https://elena-manicure.ru`, `https://www.elena-manicure.ru`, `https://antoniozubakha.github.io`, `http://localhost:5173`, `http://localhost:3050`.
+⚠️ **Важно:** Бэкенд необходим для функциональности бронирования и админ-панели.
 
-### Assets и базовый путь
-- Все пути к статикам/картинкам идут через `import.meta.env.BASE_URL`.
+**Технологии:**
+- Node.js 18+ / Express
+- База данных: Supabase (PostgreSQL)
+
+**Переменные окружения для бэкенда:**
+```env
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_service_role_key
+ADMIN_TOKEN=your_secure_admin_token
+PORT=3001  # или автоматически от хостинга
+```
+
+**Варианты хостинга бэкенда:**
+
+1. **Локальный запуск (для разработки):**
+   ```bash
+   cd server
+   npm install
+   # Создайте файл .env с переменными выше
+   npm start  # или node index.js
+   ```
+   API будет доступен на `http://localhost:3001/api`
+
+2. **Бесплатные облачные платформы:**
+   - **Railway** (рекомендуется)
+   - **Fly.io**
+   - **Render** (бесплатный план с холодным стартом)
+   - **Vercel** (требует адаптации под serverless)
+
+3. **VPS/Dedicated сервер:**
+   - DigitalOcean
+   - Linode
+   - AWS EC2 / Google Cloud / Azure
+
+**Настройка после деплоя бэкенда:**
+1. Скопируйте URL вашего API (например `https://your-api.railway.app/api`)
+2. Добавьте его в GitHub Secrets как `VITE_API_URL`
+3. Пересоберите фронтенд (push в main)
+
+### База данных (Supabase)
+
+**Создание таблиц (SQL Editor в Supabase):**
+
+```sql
+-- Таблица для забронированных слотов
+CREATE TABLE booked_slots (
+  id BIGSERIAL PRIMARY KEY,
+  date TEXT NOT NULL,
+  time TEXT NOT NULL,
+  name TEXT,
+  phone TEXT,
+  service TEXT,
+  booked_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(date, time)
+);
+
+-- Таблица для переопределения рабочих дней
+CREATE TABLE working_days (
+  date TEXT PRIMARY KEY,
+  status TEXT NOT NULL CHECK (status IN ('working', 'off'))
+);
+
+-- Индексы для оптимизации
+CREATE INDEX idx_booked_slots_date ON booked_slots(date);
+CREATE INDEX idx_booked_slots_date_time ON booked_slots(date, time);
+```
+
+**Получение ключей Supabase:**
+1. Откройте проект в Supabase
+2. Settings → API
+3. Скопируйте `URL` и `service_role` key (⚠️ не anon key!)
+
+### CORS настройки
+
+В `server/index.js` уже настроены разрешенные домены:
+- `https://elena-manicure.ru`
+- `https://www.elena-manicure.ru`
+- `https://antoniozubakha.github.io`
+- `http://localhost:5173` (Vite dev)
+- `http://localhost:3050` (Vite dev)
+
+### Проверка работоспособности
+
+После настройки проверьте:
+1. **Frontend:** https://elena-manicure.ru/
+2. **Backend Health:** `https://your-api-url/api/health` должен вернуть `{"status":"ok"}`
+3. **Бронирование:** Попробуйте забронировать слот на сайте
+4. **Админка:** Войдите в админ-панель и проверьте управление слотами
