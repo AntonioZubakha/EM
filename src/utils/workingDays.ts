@@ -46,11 +46,16 @@ export const isWorkingDayBase = (date: Date): boolean => {
     const lastJanWorkDay = new Date(year, 0, 29); // 29 января текущего года
     const daysDiff = Math.round((date.getTime() - lastJanWorkDay.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Первые 3 дня после 29 января - выходные, затем цикл 4 дня
-    if (daysDiff >= 4) {
-      const adjustedDays = daysDiff - 4; // Смещаем на начало следующего цикла
+    // 30, 31 января - выходные (день 1, 2)
+    // 1, 2 февраля - рабочие (день 3, 4)
+    // 3, 4 февраля - выходные (день 5, 6)
+    // 5, 6 февраля - рабочие (день 7, 8)
+    // и так далее по циклу 4 дня
+    if (daysDiff >= 1) {
+      const adjustedDays = daysDiff - 1; // Начинаем отсчет с 30 января (день 1)
       const cycleDay = adjustedDays % 4;
-      return cycleDay < 2; // Первые 2 дня цикла - рабочие
+      // Дни 2 и 3 цикла (1 и 2 февраля) - рабочие
+      return cycleDay === 2 || cycleDay === 3;
     }
     return false;
   }
