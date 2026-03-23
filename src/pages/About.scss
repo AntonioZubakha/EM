@@ -43,7 +43,7 @@
 
   &__text {
     font-family: var(--font-serif) !important;
-    font-size: clamp(1.1rem, 2.2vw, 1.4rem) !important;
+    font-size: clamp(0.9rem, 2.2vw, 1.15rem) !important; // коррекция под 29px (было 1.1-1.4)
     font-weight: 300 !important;
     font-style: italic;
     color: var(--text-secondary) !important;
@@ -61,7 +61,7 @@
 
 .about-name {
   font-family: var(--font-serif) !important;
-  font-size: clamp(1.5rem, 3vw, 2.2rem) !important; // было 2.2rem - 3.8rem (-30%)
+  font-size: clamp(1.25rem, 3vw, 1.8rem) !important; // коррекция под 29px (было 1.5-2.2)
   letter-spacing: 0.1em !important;
   text-transform: uppercase;
   color: var(--text-primary) !important;

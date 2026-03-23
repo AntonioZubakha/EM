@@ -150,16 +150,16 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 24px; // увеличено с 20px (+20%)
+  font-size: 29px; // увеличено с 24px (+20%)
   overflow-x: hidden;
   max-width: 100vw;
 
   @media (max-width: 768px) {
-    font-size: 17px;
+    font-size: 19px; // пропорционально увеличено (было 17)
   }
 
   @media (max-width: 480px) {
-    font-size: 15px;
+    font-size: 16px; // пропорционально увеличено (было 15)
   }
 }
 
@@ -213,7 +213,7 @@ h6 {
 }
 
 h1 {
-  font-size: clamp(2.1rem, 4.2vw, 3.5rem); // было 3rem - 5rem (-30%)
+  font-size: clamp(1.75rem, 4.2vw, 2.9rem); // коррекция под 29px base (было 2.1-3.5)
   font-weight: 300;
   letter-spacing: 0.05em;
   color: var(--text-primary) !important;
@@ -225,7 +225,7 @@ h1 {
 }
 
 h2 {
-  font-size: clamp(1.4rem, 3.2vw, 2.5rem); // было 2rem - 3.5rem (-30%)
+  font-size: clamp(1.15rem, 3.2vw, 2.1rem); // коррекция под 29px base (было 1.4-2.5)
   font-weight: 400;
   color: var(--text-primary) !important;
   background: none !important;
@@ -236,14 +236,14 @@ h2 {
 }
 
 h3 {
-  font-size: clamp(1.1rem, 2.2vw, 1.6rem); // было 1.4rem - 2.2rem
+  font-size: clamp(0.9rem, 2.2vw, 1.3rem); // коррекция под 29px base (было 1.1-1.6)
   font-weight: 400;
   color: var(--text-primary);
   margin-bottom: 0.8rem;
 }
 
 h4 {
-  font-size: clamp(0.9rem, 1.5vw, 1.2rem); // было 1.1rem - 1.5rem
+  font-size: clamp(0.75rem, 1.5vw, 1.0rem); // коррекция под 29px base (было 0.9-1.2)
   font-weight: 500;
   color: var(--text-primary);
   margin-bottom: 0.6rem;
@@ -309,16 +309,18 @@ img {
   padding: 0 2.5rem;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: center; // Центрирование
   align-items: center;
-  gap: 2rem;
+  gap: 4.5rem; // Увеличенный отступ между лого и навигацией
 
   @media (max-width: 900px) {
     padding: 0 1.5rem;
+    gap: 2rem;
   }
 
   @media (max-width: 768px) {
     padding: 0 1.2rem;
+    justify-content: space-between; // На мобильных возвращаем space-between для бургера
   }
 }
 
@@ -331,7 +333,7 @@ img {
 
   h2 {
     font-family: var(--font-serif) !important;
-    font-size: clamp(1.3rem, 2.5vw, 1.7rem) !important;
+    font-size: clamp(1.1rem, 2.1vw, 1.4rem) !important; // коррекция под 29px (было 1.3-1.7)
     font-weight: 500 !important;
     letter-spacing: 0.08em !important;
     color: var(--gold) !important;
@@ -350,7 +352,7 @@ img {
 
   span {
     font-family: var(--font-script) !important;
-    font-size: 1.05rem;
+    font-size: 0.85rem; // коррекция под 29px (было 1.05)
     color: var(--rose) !important;
     letter-spacing: 0.04em;
     display: block;
