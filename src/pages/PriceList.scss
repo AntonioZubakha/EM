@@ -101,9 +101,9 @@
     border-bottom: 1px solid var(--border-gold);
     background: rgba(201, 169, 110, 0.04);
 
-    &--price { text-align: right; width: 110px; }
-    &--action { text-align: right; width: 170px; }
-    &--duration { text-align: center; width: 90px; }
+    &--price { text-align: right; width: 1%; white-space: nowrap; }
+    &--action { text-align: right; width: 1%; white-space: nowrap; }
+    &--duration { text-align: center; width: 1%; white-space: nowrap; }
   }
 
   &__row {
@@ -118,7 +118,7 @@
   }
 
   &__cell {
-    padding: 1.25rem 1rem; // Чуть меньше боковые падинги
+    padding: 1.25rem 1rem;
     font-family: var(--font-sans);
     font-size: 0.92rem;
     font-weight: 300;
@@ -127,7 +127,8 @@
     vertical-align: middle;
 
     &--service {
-      width: 28%;
+      width: 25%;
+      min-width: 180px;
       strong {
         font-weight: 500;
         color: var(--text-primary);
@@ -137,23 +138,27 @@
 
     &--description {
       width: auto;
+      min-width: 200px;
       color: var(--text-muted);
       font-size: 0.85rem;
       line-height: 1.5;
     }
 
     &--duration {
-      width: 90px;
+      width: 1%;
+      white-space: nowrap;
       text-align: center;
       color: var(--text-muted);
       font-size: 0.85rem;
-      white-space: nowrap;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
     }
 
     &--price {
-      width: 110px;
-      text-align: right;
+      width: 1%;
       white-space: nowrap;
+      text-align: right;
+      padding-left: 1.5rem;
 
       strong {
         font-family: var(--font-serif);
@@ -165,14 +170,15 @@
     }
 
     &--action {
-      width: 170px;
-      text-align: right;
+      width: 1%;
       white-space: nowrap;
+      text-align: right;
+      padding-left: 1.5rem;
 
       .btn-sm {
-        padding-left: 1.1rem;
-        padding-right: 1.1rem;
-        min-width: 150px;
+        padding-left: 1.2rem;
+        padding-right: 1.2rem;
+        min-width: 200px; // Увеличено для "ЗАПИСАТЬСЯ" при 29px
         justify-content: center;
       }
     }
