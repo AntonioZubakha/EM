@@ -142,184 +142,172 @@
   box-shadow: var(--shadow-lg);
 }
 
-.admin-calendar-header {
+.calendar-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
 
-  h2 {
+  &__nav-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-gold);
+    background: transparent;
+    border-radius: var(--r-xs);
+    font-size: 1.1rem;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all var(--t-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      border-color: var(--gold);
+      background: rgba(201, 169, 110, 0.10);
+    }
+  }
+
+  &__title {
+    font-family: var(--font-serif);
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    font-weight: 400;
+    letter-spacing: 0.06em;
     color: var(--text-primary);
-    font-size: clamp(1.2rem, 3vw, 1.5rem);
     margin: 0;
+    text-transform: capitalize;
   }
 }
 
-.admin-calendar-nav {
-  background: var(--primary-purple);
-  color: var(--text-white);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: var(--primary-rose);
-  }
-}
-
-.admin-calendar-grid {
+.calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+
+  &__day {
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0.5rem 0.25rem;
+  }
 }
 
-.admin-calendar-weekday {
-  text-align: center;
-  font-weight: 600;
-  color: var(--text-secondary);
-  padding: 0.5rem;
-  font-size: 0.9rem;
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
 }
 
-.admin-calendar-day-wrapper {
-  position: relative;
+.calendar-day {
   aspect-ratio: 1;
-  pointer-events: auto;
-}
-
-.admin-calendar-day {
-  width: 100%;
-  height: 100%;
-  border: 2px solid var(--border-light);
-  background: var(--surface-primary);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all var(--t-mid);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  border-radius: var(--r-xs);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  font-family: var(--font-serif);
-  font-weight: 500;
-  position: relative;
-  z-index: 1;
+  padding: 0;
+  overflow: hidden;
 
-  &.today {
-    border-color: var(--gold);
-    background: rgba(212, 180, 131, 0.15);
-    box-shadow: inset 0 0 10px rgba(212, 180, 131, 0.2);
+  &.work-day {
+    border-color: var(--border-gold);
+    color: var(--text-secondary);
+    background: rgba(201, 169, 110, 0.04);
   }
 
-  &.working {
-    background: rgba(212, 180, 131, 0.08);
-    border-color: var(--gold);
-    border-width: 1px;
-    color: var(--gold);
-    font-weight: 600;
-    
-    &::after {
-      content: '';
+  &.selected-day {
+    background: rgba(201, 169, 110, 0.18) !important;
+    color: var(--gold) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 1px rgba(201, 169, 110, 0.40);
+  }
+
+  &.today {
+    .calendar-day__today-marker {
       position: absolute;
-      bottom: 6px;
+      top: 3px;
+      right: 3px;
       width: 4px;
       height: 4px;
       background: var(--gold);
       border-radius: 50%;
+      z-index: 2;
     }
   }
 
-  &.off {
-    background: rgba(221, 184, 184, 0.03);
-    border-color: var(--border-subtle);
-    color: var(--text-muted);
-    font-weight: 300;
-  }
-
-  &.selected {
-    background: var(--gold);
-    color: var(--noir) !important;
-    border-color: var(--gold);
-    transform: scale(1.08);
-    box-shadow: var(--shadow-gold);
-    z-index: 2;
-  }
-
-  &:hover:not(.empty) {
-    border-color: var(--gold);
-    background: rgba(212, 180, 131, 0.12);
-  }
-
-  &.off {
-    cursor: pointer; // Разрешаем клики даже для выходных дней
-  }
-
-  &__toggle-btn {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 24px;
-    height: 24px;
+  /* Админ-специфичные элементы */
+  .admin-calendar-day-btn {
+    width: 100%;
+    height: 100%;
+    background: transparent;
     border: none;
-    background: rgba(138, 43, 226, 0.2);
-    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    color: var(--primary-purple);
-    z-index: 100;
-    transition: all 0.2s ease;
     padding: 0;
-    pointer-events: auto;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    z-index: 1;
 
     &:hover {
-      background: var(--primary-purple);
-      color: var(--text-white);
-      transform: scale(1.2);
-    }
-
-    &:active {
-      transform: scale(0.9);
-    }
-
-    &:focus {
-      outline: 2px solid var(--primary-purple);
-      outline-offset: 2px;
-    }
-
-    // Скрываем кнопку на мобильных устройствах
-    @media (max-width: 768px) {
-      display: none;
+      background: rgba(201, 169, 110, 0.08);
     }
   }
 
-  // Визуальная обратная связь при long press на мобильных
-  &.long-pressing {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.3);
-    animation: longPressPulse 0.6s ease-in-out;
-  }
-}
+  .admin-calendar-day__toggle-btn {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    z-index: 3;
+    transition: all var(--t-fast);
 
-@keyframes longPressPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.4);
+    &:hover {
+      background: var(--gold);
+      color: var(--noir);
+      border-color: var(--gold);
+    }
   }
-  50% {
-    box-shadow: 0 0 0 8px rgba(138, 43, 226, 0.2);
+
+  &.work-day .admin-calendar-day__toggle-btn {
+    border-color: var(--border-gold);
+    color: var(--gold);
   }
-  100% {
-    box-shadow: 0 0 0 4px rgba(138, 43, 226, 0.3);
+
+  &.has-bookings::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px;
+    z-index: 2;
   }
 }
 
@@ -354,7 +342,7 @@
 
   &__override-badge {
     font-size: 0.85rem;
-    color: var(--primary-gold);
+    color: var(--gold);
     font-weight: 500;
   }
 
@@ -373,8 +361,16 @@
 
 .admin-slots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-slot-wrapper {
@@ -409,28 +405,24 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.1rem;
+    gap: 0.3rem;
     margin-top: 0.5rem;
-    font-size: 0.75rem;
-    max-width: 100%;
-    overflow: hidden;
+    font-size: 0.8rem;
+    width: 100%;
+    text-align: center;
   }
 
   &-name {
     font-weight: 500;
     color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.3;
   }
 
   &-service {
     color: var(--text-muted);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-style: italic;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.4;
   }
 
   &.free {

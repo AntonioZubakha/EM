@@ -464,7 +464,7 @@ const Admin: React.FC = () => {
     const startingDayIndex = getDay(monthStart) === 0 ? 6 : getDay(monthStart) - 1;
 
     const emptyDays = Array.from({ length: startingDayIndex }, (_, i) => (
-      <div key={`empty-${i}`} className="admin-calendar-day-wrapper empty"></div>
+      <div key={`empty-${i}`} className="calendar-day empty"></div>
     ));
 
     const days = daysInMonth.map((day) => {
@@ -482,12 +482,10 @@ const Admin: React.FC = () => {
       return (
         <div
           key={day.toString()}
-          className={`admin-calendar-day-wrapper ${isSelected ? 'selected' : ''}`}
+          className={`calendar-day admin-day-wrapper ${isSelected ? 'selected-day' : ''} ${isWorking ? 'work-day' : ''} ${isCurrentToday ? 'today' : ''}`}
         >
           <motion.button
             onClick={() => {
-              // Обычный клик - выбор дня (только для рабочих дней, только на десктопе)
-              // На мобильных это обрабатывается через handleTouchEnd
               if (isWorking && window.innerWidth > 768) {
                 setSelectedDate(day);
               }
@@ -495,13 +493,13 @@ const Admin: React.FC = () => {
             onTouchStart={(e) => handleTouchStart(e, day)}
             onTouchEnd={(e) => handleTouchEnd(e, day)}
             onTouchCancel={handleTouchCancel}
-            className={`admin-calendar-day ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${isLongPressing ? 'long-pressing' : ''}`}
+            className={`admin-calendar-day-btn ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'}`}
             whileHover={isWorking && window.innerWidth > 768 ? { scale: 1.05 } : {}}
             whileTap={{ scale: 0.95 }}
-            title={isWorking ? 'Рабочий день. На мобильных: зажмите для изменения статуса' : 'Выходной. На мобильных: зажмите для изменения статуса'}
           >
-            <span>{format(day, 'd')}</span>
+            <span className="calendar-day__number">{format(day, 'd')}</span>
           </motion.button>
+          {isCurrentToday && <div className="calendar-day__today-marker" />}
           <motion.button
             className="admin-calendar-day__toggle-btn"
             onClick={(e) => {
@@ -587,19 +585,19 @@ const Admin: React.FC = () => {
 
       <div className="admin-content">
         <div className="admin-calendar-section">
-          <div className="admin-calendar-header">
+          <div className="calendar-header">
             <motion.button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="admin-calendar-nav"
+              className="calendar-header__nav-btn"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
               ‹
             </motion.button>
-            <h2>{format(currentMonth, 'LLLL yyyy', { locale: ru })}</h2>
+            <h3 className="calendar-header__title">{format(currentMonth, 'LLLL yyyy', { locale: ru })}</h3>
             <motion.button
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="admin-calendar-nav"
+              className="calendar-header__nav-btn"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -607,10 +605,13 @@ const Admin: React.FC = () => {
             </motion.button>
           </div>
 
-          <div className="admin-calendar-grid">
+          <div className="calendar-weekdays">
             {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
-              <div key={day} className="admin-calendar-weekday">{day}</div>
+              <div key={day} className="calendar-weekdays__day">{day}</div>
             ))}
+          </div>
+
+          <div className="calendar-grid">
             {calendarDays}
           </div>
         </div>
