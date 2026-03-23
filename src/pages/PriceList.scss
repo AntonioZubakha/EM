@@ -89,8 +89,6 @@
   width: 100%;
   border-collapse: collapse;
   
-  thead { }
-
   &__header {
     font-family: var(--font-sans);
     font-size: 0.7rem;
@@ -103,8 +101,9 @@
     border-bottom: 1px solid var(--border-gold);
     background: rgba(201, 169, 110, 0.04);
 
-    &--price, &--action { text-align: right; }
-    &--duration { text-align: center; }
+    &--price { text-align: right; width: 110px; }
+    &--action { text-align: right; width: 170px; }
+    &--duration { text-align: center; width: 90px; }
   }
 
   &__row {
@@ -119,7 +118,7 @@
   }
 
   &__cell {
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem 1rem; // Чуть меньше боковые падинги
     font-family: var(--font-sans);
     font-size: 0.92rem;
     font-weight: 300;
@@ -128,6 +127,7 @@
     vertical-align: middle;
 
     &--service {
+      width: 28%;
       strong {
         font-weight: 500;
         color: var(--text-primary);
@@ -136,12 +136,14 @@
     }
 
     &--description {
+      width: auto;
       color: var(--text-muted);
       font-size: 0.85rem;
       line-height: 1.5;
     }
 
     &--duration {
+      width: 90px;
       text-align: center;
       color: var(--text-muted);
       font-size: 0.85rem;
@@ -149,6 +151,7 @@
     }
 
     &--price {
+      width: 110px;
       text-align: right;
       white-space: nowrap;
 
@@ -162,8 +165,16 @@
     }
 
     &--action {
+      width: 170px;
       text-align: right;
       white-space: nowrap;
+
+      .btn-sm {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+        min-width: 150px;
+        justify-content: center;
+      }
     }
   }
 }
