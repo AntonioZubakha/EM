@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 
@@ -16,18 +16,22 @@ const withBase = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^
 
 const Portfolio: React.FC = () => {
   const [imageErrors, setImageErrors] = useState<{ [key: number]: boolean }>({});
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const works = [
-    { img: withBase('5298658092193091210.jpg'), alt: 'Пример работы - маникюр' },
-    { img: withBase('5298658092193091224.jpg'), alt: 'Пример работы - маникюр' },
-    { img: withBase('5298658092193091250.jpg'), alt: 'Пример работы - маникюр' },
-    { img: withBase('5429213501576052045.jpg'), alt: 'Пример работы - маникюр' },
-    { img: withBase('5298658092193091227.jpg'), alt: 'Пример работы - педикюр' },
+    { img: withBase('5298658092193091210.jpg'), alt: 'Пример работы — маникюр' },
+    { img: withBase('5298658092193091224.jpg'), alt: 'Пример работы — маникюр' },
+    { img: withBase('5298658092193091250.jpg'), alt: 'Пример работы — маникюр' },
+    { img: withBase('5429213501576052045.jpg'), alt: 'Пример работы — маникюр' },
+    { img: withBase('5298658092193091227.jpg'), alt: 'Пример работы — педикюр' },
   ];
 
   const handleImageError = (index: number) => {
     setImageErrors(prev => ({ ...prev, [index]: true }));
   };
+
+  const openLightbox = (src: string) => setLightboxSrc(src);
+  const closeLightbox = () => setLightboxSrc(null);
 
   return (
     <div className="container portfolio-section">
@@ -42,34 +46,22 @@ const Portfolio: React.FC = () => {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.97 }}
         whileInView={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
         viewport={{ once: true }}
         className="portfolio-slider-container"
       >
         <Swiper
           slidesPerView={1}
-          spaceBetween={30}
+          spaceBetween={20}
           loop={true}
-          autoplay={{
-            delay: 4000,
-            disableOnInteraction: false,
-          }}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
+          autoplay={{ delay: 4500, disableOnInteraction: false }}
+          pagination={{ clickable: true, dynamicBullets: false }}
           navigation={true}
           breakpoints={{
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 30,
-            },
-            1024: {
-              slidesPerView: 3,
-              spaceBetween: 40,
-            },
+            640:  { slidesPerView: 2, spaceBetween: 20 },
+            1024: { slidesPerView: 3, spaceBetween: 24 },
           }}
           modules={[Navigation, Pagination, Autoplay]}
           className="portfolio-swiper"
@@ -86,6 +78,7 @@ const Portfolio: React.FC = () => {
                   alt={work.alt}
                   loading="lazy"
                   onError={() => handleImageError(index)}
+                  onClick={() => openLightbox(work.img)}
                   width="800"
                   height="600"
                 />
@@ -94,6 +87,33 @@ const Portfolio: React.FC = () => {
           ))}
         </Swiper>
       </motion.div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxSrc && (
+          <motion.div
+            className="portfolio-lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={closeLightbox}
+          >
+            <motion.img
+              src={lightboxSrc}
+              alt="Работа мастера"
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              onClick={e => e.stopPropagation()}
+            />
+            <button className="portfolio-lightbox__close" onClick={closeLightbox} aria-label="Закрыть">
+              ✕
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1,201 +1,128 @@
-// Cabinet Page - Минималистичный дизайн согласно бренд-буку
+// ═══════════════════════════════════════════════════
+// CABINET — Luxury redesign
+// ═══════════════════════════════════════════════════
 
-.cabinet-section {
-  position: relative;
-  padding: 4rem 0;
-  
-  // Акварельный фоновый паттерн
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--gradient-watercolor);
-    pointer-events: none;
-    z-index: -1;
-  }
-}
+.cabinet-section { position: relative; }
 
 .cabinet-slider-container {
-  padding: 2rem 0;
+  padding: 1rem 0;
   position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
-  max-width: 100%;
   overflow: hidden;
   box-sizing: border-box;
 }
 
 .cabinet-swiper {
   width: 100%;
-  max-width: 100%;
-  padding: 2rem 0 4rem;
+  padding: 1rem 0 3.5rem !important;
   position: relative;
-  overflow: hidden;
+  overflow: visible !important;
   box-sizing: border-box;
+
+  // Navigation buttons
+  .swiper-button-prev,
+  .swiper-button-next {
+    width: 44px !important;
+    height: 44px !important;
+    background: rgba(13, 10, 11, 0.80) !important;
+    border: 1px solid var(--border-gold) !important;
+    border-radius: 50% !important;
+    backdrop-filter: blur(8px);
+    transition: all var(--t-mid) !important;
+
+    &::after {
+      font-size: 14px !important;
+      color: var(--gold) !important;
+      font-weight: 600 !important;
+    }
+
+    &:hover {
+      background: rgba(201, 169, 110, 0.15) !important;
+      border-color: var(--gold) !important;
+      box-shadow: var(--shadow-gold) !important;
+      transform: scale(1.05) !important;
+    }
+
+    @media (max-width: 480px) { display: none !important; }
+  }
+
+  // Pagination
+  .swiper-pagination-bullet {
+    background: var(--text-muted) !important;
+    opacity: 0.5 !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: var(--r-full) !important;
+    transition: all var(--t-mid) !important;
+  }
+
+  .swiper-pagination-bullet-active {
+    width: 20px !important;
+    background: var(--gold) !important;
+    opacity: 1 !important;
+    border-radius: 3px !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .cabinet-slide {
   width: 100%;
-  height: 400px;
-  border-radius: var(--radius-lg);
+  height: 380px;
+  border-radius: var(--r-md);
   overflow: hidden;
   position: relative;
-  transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: var(--shadow-soft);
-  background: var(--primary-gray);
-  
+  background: var(--surface-card);
+
+  // Gold border
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid var(--border-gold);
+    pointer-events: none;
+    z-index: 2;
+    transition: border-color var(--t-mid);
+  }
+
   img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.4s ease;
+    transition: transform 0.7s var(--ease-luxury), filter 0.5s ease;
+    filter: brightness(0.88) contrast(1.08) saturate(0.9);
   }
-  
+
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
-    
+    &::after { border-color: var(--gold); }
     img {
-      transform: scale(1.05);
+      transform: scale(1.04);
+      filter: brightness(0.96) contrast(1.05) saturate(1);
     }
   }
-  
+
   &__error {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     height: 100%;
-    background: var(--primary-gray);
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    font-weight: 500;
-    font-family: 'Open Sans', sans-serif;
-  }
-  
-  @media (max-width: 768px) {
-    height: 350px;
-  }
-  
-  @media (max-width: 480px) {
-    height: 300px;
-  }
-}
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-md);
 
-// Стили для пагинации в соответствии с бренд-буком
-.swiper-pagination {
-  bottom: 0 !important;
-}
-
-.swiper-pagination-bullet {
-  background-color: var(--primary-rose) !important;
-  opacity: 0.3 !important;
-  transition: all 0.3s ease !important;
-  width: 10px !important;
-  height: 10px !important;
-  margin: 0 6px !important;
-}
-
-.swiper-pagination-bullet-active {
-  background-color: var(--primary-rose) !important;
-  opacity: 1 !important;
-  transform: scale(1.2) !important;
-  box-shadow: 0 2px 8px rgba(232, 183, 200, 0.4) !important;
-}
-
-// Стили для навигационных кнопок
-.swiper-button-next,
-.swiper-button-prev {
-  color: var(--primary-rose) !important;
-  background: var(--primary-white) !important;
-  width: 50px !important;
-  height: 50px !important;
-  border-radius: 50% !important;
-  box-shadow: var(--shadow-soft) !important;
-  border: 2px solid var(--primary-rose) !important;
-  transition: all 0.3s ease !important;
-  
-  &::after {
-    font-size: 1.2rem !important;
-    font-weight: 700 !important;
-  }
-  
-  &:hover {
-    background: var(--primary-rose) !important;
-    color: var(--text-white) !important;
-    box-shadow: var(--shadow-medium) !important;
-    transform: scale(1.1) !important;
-  }
-  
-  &:active {
-    transform: scale(0.95) !important;
-  }
-  
-  @media (max-width: 768px) {
-    width: 40px !important;
-    height: 40px !important;
-    
-    &::after {
-      font-size: 1rem !important;
+    span {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
     }
   }
-}
 
-.swiper-button-next {
-  right: 10px !important;
-  
-  @media (max-width: 768px) {
-    right: 5px !important;
-  }
+  @media (max-width: 768px) { height: 320px; }
+  @media (max-width: 480px) { height: 260px; }
 }
-
-.swiper-button-prev {
-  left: 10px !important;
-  
-  @media (max-width: 768px) {
-    left: 5px !important;
-  }
-}
-
-// Адаптивность
-@media (max-width: 1024px) {
-  .cabinet-slider-container {
-    padding: 1.5rem 0;
-  }
-  
-  .cabinet-swiper {
-    padding: 1.5rem 0 3rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .cabinet-section {
-    padding: 3rem 0;
-  }
-  
-  .cabinet-slider-container {
-    padding: 1rem 0;
-  }
-  
-  .cabinet-swiper {
-    padding: 1rem 0 3rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .cabinet-section {
-    padding: 2rem 0;
-  }
-  
-  .swiper-button-next,
-  .swiper-button-prev {
-    display: none !important;
-  }
-}
-

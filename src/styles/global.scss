@@ -1,103 +1,145 @@
-// Импорт Google Fonts согласно бренд-буку
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=Open+Sans:wght@300;400;500;600;700;800&family=Great+Vibes&display=swap');
+// ═══════════════════════════════════════════════════════════════
+// ELENA MANICURE — LUXURY DESIGN SYSTEM
+// Chanel Nº5 × Modern Digital Luxury
+// ═══════════════════════════════════════════════════════════════
 
-// Цветовая палитра согласно бренд-буку
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:wght@200;300;400;500;600;700&family=Great+Vibes&display=swap');
+
+// ══ CSS CUSTOM PROPERTIES ══════════════════════════════════════
 :root {
-  // Основные цвета бренд-бука (улучшенная насыщенность для контрастности)
-  --primary-rose: #E8B7C8; // Пудрово-розовый - нежность и женственность
-  --primary-rose-dark: #D49FB0; // Более насыщенный розовый для контраста
-  --primary-rose-light: #F5E1E8; // Светлый розовый
-  --primary-gold: #D4AF37; // Золотистый - премиальность и изысканность
-  --primary-gold-dark: #B8941F; // Более насыщенное золото для контраста
-  --primary-gold-light: #E8C966; // Светлое золото
-  --primary-white: #FFFFFF; // Белый - чистота и минимализм
-  --primary-gray: #F2F2F2; // Серый светлый - нейтральность и баланс
-  
-  // Дополнительные оттенки для градиентов
-  --rose-light: #F5E1E8; // Светлый розовый
-  --rose-dark: #D49FB0; // Темный розовый (более насыщенный)
-  --gold-light: #E8C966; // Светлое золото
-  --gold-dark: #B8941F; // Темное золото (более насыщенное)
-  
-  // Акцентные цвета
-  --accent-rose: #E8B7C8;
-  --accent-gold: #D4AF37;
-  
-  // Градиенты в стиле бренд-бука
-  --gradient-primary: linear-gradient(135deg, #FFFFFF 0%, #F2F2F2 100%);
-  --gradient-rose: linear-gradient(135deg, #E8B7C8 0%, #D89FB0 50%, #F5E1E8 100%);
-  --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #E8C966 50%, #B8941F 100%);
-  --gradient-rose-gold: linear-gradient(135deg, #E8B7C8 0%, #D4AF37 100%);
-  --gradient-soft: linear-gradient(135deg, #F5E1E8 0%, #FFFFFF 100%);
-  
-  // Акварельные эффекты
-  --gradient-watercolor: radial-gradient(ellipse at 20% 30%, 
-    rgba(232, 183, 200, 0.15) 0%, 
-    transparent 50%),
-    radial-gradient(ellipse at 80% 70%, 
-    rgba(212, 175, 55, 0.1) 0%, 
-    transparent 50%);
-  
-  --gradient-elegant: radial-gradient(ellipse at top left, 
-    rgba(232, 183, 200, 0.08) 0%, 
-    transparent 60%),
-    radial-gradient(ellipse at bottom right, 
-    rgba(212, 175, 55, 0.06) 0%, 
-    transparent 60%);
-  
-  // Текстовые цвета (максимальная контрастность для медицины)
-  --text-primary: #000000; // Чистый черный для максимального контраста
-  --text-secondary: #2A2A2A; // Очень темный серый
-  --text-tertiary: #3A3A3A; // Темный серый
-  --text-light: #5A5A5A; // Средний серый
-  --text-white: #FFFFFF;
-  
-  // Поверхности
-  --surface-primary: #FFFFFF;
-  --surface-secondary: #F2F2F2;
-  --surface-rose: #F5E1E8;
-  --surface-glass: rgba(255, 255, 255, 0.9);
-  --surface-overlay: rgba(44, 44, 44, 0.6);
-  
-  // Границы (более контрастные для медицины)
-  --border-light: rgba(232, 183, 200, 0.4); // Увеличена непрозрачность
-  --border-medium: rgba(232, 183, 200, 0.6); // Увеличена непрозрачность
-  --border-strong: rgba(232, 183, 200, 0.8); // Увеличена непрозрачность
-  --border-gold: rgba(212, 175, 55, 0.7); // Увеличена непрозрачность
-  
-  // Тени в стиле бренд-бука (мягкие, нежные)
-  --shadow-soft: 0 2px 12px rgba(232, 183, 200, 0.15), 0 1px 4px rgba(0, 0, 0, 0.05);
-  --shadow-medium: 0 4px 20px rgba(232, 183, 200, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-strong: 0 8px 32px rgba(232, 183, 200, 0.25), 0 4px 16px rgba(0, 0, 0, 0.1);
-  --shadow-gold: 0 4px 16px rgba(212, 175, 55, 0.3), 0 2px 8px rgba(212, 175, 55, 0.2);
-  --shadow-glow: 0 0 20px rgba(232, 183, 200, 0.4);
-  
-  // Радиусы - более органичные
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --radius-xl: 40px;
-  --radius-2xl: 56px;
-  --radius-full: 50%;
-  
-  // Плавные переходы
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-luxury: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  // ── Core Palette ─────────────────────────────────────────────
+  --noir: #1E1828; // тёмный аметист (не pitch-black)
+  --noir-soft: #261E32; // чуть светлее
+  --noir-mid: #312840; // поверхность карточек
+  --noir-light: #3D3352; // бордеры и разделители
+
+  --gold: #D4B483; // матовое золото (чуть светлее)
+  --gold-light: #EDD9AE; // светлое золото
+  --gold-dark: #AE8B52; // тёмное золото
+  --gold-shimmer: #F5E8CC; // блик
+
+  --rose: #DDB8B8; // пудровый розовый (светлее)
+  --rose-light: #F2E0E0; // светлый
+  --rose-dark: #C28888; // насыщенный
+  --rose-muted: #9A7272; // приглушённый
+
+  --cream: #F5F0E8; // кремовый белый  
+  --cream-dark: #E8E0D0; // более тёмный крем
+  --white: #FFFFFF;
+
+  // ── Gradients ─────────────────────────────────────────────────
+  --grad-gold: linear-gradient(135deg, #D4B483 0%, #F5E8CC 50%, #AE8B52 100%);
+  --grad-rose: linear-gradient(135deg, #DDB8B8 0%, #F2E0E0 50%, #C28888 100%);
+  --grad-dark: linear-gradient(135deg, #261E32 0%, #1E1828 100%);
+  --grad-card: linear-gradient(145deg, rgba(49, 40, 64, 0.94) 0%, rgba(38, 30, 50, 0.97) 100%);
+  --grad-rose-gold: linear-gradient(135deg, #DDB8B8 0%, #D4B483 100%);
+  --grad-aurora: radial-gradient(ellipse at 20% 50%, rgba(212, 180, 131, 0.14) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(221, 184, 184, 0.10) 0%, transparent 60%),
+    radial-gradient(ellipse at 60% 80%, rgba(194, 136, 136, 0.08) 0%, transparent 50%);
+
+  // ── Typography ────────────────────────────────────────────────
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-script: 'Great Vibes', cursive;
+
+  // ── Text Colors ───────────────────────────────────────────────
+  --text-primary: #F8F4EE;
+  --text-secondary: #D8C8B5;
+  --text-muted: #9E9086;
+  --text-gold: #D4B483;
+  --text-rose: #DDB8B8;
+  --text-dark: #1E1828;
+
+  // ── Surfaces ──────────────────────────────────────────────────
+  --surface-base: #1E1828;
+  --surface-card: rgba(49, 40, 64, 0.90);
+  --surface-hover: rgba(61, 51, 82, 0.95);
+  --surface-glass: rgba(30, 24, 40, 0.75);
+  --surface-overlay: rgba(20, 16, 30, 0.88);
+
+  // ── Borders ───────────────────────────────────────────────────
+  --border-gold: rgba(212, 180, 131, 0.35);
+  --border-gold-strong: rgba(212, 180, 131, 0.65);
+  --border-rose: rgba(221, 184, 184, 0.30);
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-line: rgba(255, 255, 255, 0.14);
+
+  // ── Shadows ───────────────────────────────────────────────────
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.30);
+  --shadow-gold: 0 0 30px rgba(212, 180, 131, 0.28), 0 4px 16px rgba(212, 180, 131, 0.20);
+  --shadow-rose: 0 0 24px rgba(221, 184, 184, 0.20);
+  --shadow-glow: 0 0 40px rgba(212, 180, 131, 0.38);
+
+  // ── Radii ─────────────────────────────────────────────────────
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 36px;
+  --r-2xl: 48px;
+  --r-full: 9999px;
+
+  // ── Transitions ───────────────────────────────────────────────
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-luxury: cubic-bezier(0.23, 1, 0.32, 1);
+  --t-fast: 0.18s var(--ease-out);
+  --t-mid: 0.32s var(--ease-out);
+  --t-slow: 0.55s var(--ease-luxury);
+
+  // ── Layout ────────────────────────────────────────────────────
+  --max-w: 1200px;
+  --header-h: 76px;
+
+  // ── Legacy aliases (for backward compat) ──────────────────────
+  --primary-rose: var(--rose);
+  --primary-rose-dark: var(--rose-dark);
+  --primary-rose-light: var(--rose-light);
+  --primary-gold: var(--gold);
+  --primary-gold-dark: var(--gold-dark);
+  --primary-gold-light: var(--gold-light);
+  --primary-white: var(--cream);
+  --primary-gray: var(--noir-light);
+  --surface-primary: var(--surface-card);
+  --surface-secondary: var(--noir-soft);
+  --surface-rose: rgba(212, 165, 165, 0.10);
+  --text-white: var(--text-primary);
+  --border-light: var(--border-subtle);
+  --border-medium: var(--border-gold);
+  --border-strong: var(--border-gold-strong);
+  --border-gold-compat: var(--border-gold);
+  --shadow-soft: var(--shadow-sm);
+  --shadow-medium: var(--shadow-md);
+  --shadow-strong: var(--shadow-lg);
+  --shadow-luxury: var(--shadow-lg);
+  --gradient-primary: var(--grad-dark);
+  --gradient-rose: var(--grad-rose);
+  --gradient-gold: var(--grad-gold);
+  --gradient-rose-gold: var(--grad-rose-gold);
+  --gradient-soft: rgba(35, 29, 34, 0.60);
+  --gradient-elegant: var(--grad-aurora);
+  --gradient-watercolor: var(--grad-aurora);
+  --gradient-luxury: var(--grad-card);
+  --gradient-sage: var(--grad-gold);
+  --gradient-sunset: var(--grad-rose-gold);
+  --accent-burgundy: var(--rose-dark);
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-full: var(--r-full);
+  --transition-fast: var(--t-fast);
+  --transition-medium: var(--t-mid);
+  --transition-slow: var(--t-slow);
+  --transition-luxury: var(--t-slow);
   --transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  
-  // Размеры для адаптивности
-  --container-xs: 480px;
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1536px;
+  --container-xl: var(--max-w);
 }
 
-// Сброс стилей и базовые настройки
+// ══ RESET ══════════════════════════════════════════════════════
 *,
 *::before,
 *::after {
@@ -108,467 +150,597 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 18px; // Увеличено с 16px
+  font-size: 24px; // увеличено с 20px (+20%)
   overflow-x: hidden;
   max-width: 100vw;
-  
+
   @media (max-width: 768px) {
-    font-size: 16px; // Увеличено с 14px
+    font-size: 17px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 15px;
   }
 }
 
+// ══ BODY — AURORA BACKGROUND ═══════════════════════════════════
 body {
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--primary-white);
-  background-attachment: fixed;
+  font-family: var(--font-sans);
+  background-color: var(--noir);
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(61, 51, 82, 0.6) 0%, transparent 55%);
   color: var(--text-primary);
   line-height: 1.7;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
-  
-  // Акварельные фоновые паттерны
+
+  // Aurora gradient layer
   &::before {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-watercolor);
+    inset: 0;
+    background: var(--grad-aurora);
     pointer-events: none;
-    z-index: -2;
+    z-index: 0;
+    animation: aurora-shift 20s ease-in-out infinite alternate;
   }
-  
-  // Дополнительный слой акварельных мазков
+
+  // Noise texture overlay
   &::after {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      radial-gradient(circle at 1px 1px, rgba(232, 180, 184, 0.02) 1px, transparent 0);
-    background-size: 20px 20px;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
     pointer-events: none;
-    z-index: -1;
-    opacity: 0.3;
+    z-index: 0;
+    opacity: 0.4;
   }
 }
 
-// Роскошная типографика
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Playfair Display', serif;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+// ══ TYPOGRAPHY ═════════════════════════════════════════════════
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
   color: var(--text-primary);
 }
 
 h1 {
-  font-size: clamp(3rem, 7vw, 5.5rem); // Увеличено
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 2rem; // Увеличено
-  color: var(--text-primary) !important; // Четкий черный цвет
+  font-size: clamp(2.1rem, 4.2vw, 3.5rem); // было 3rem - 5rem (-30%)
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: var(--text-primary) !important;
   background: none !important;
   -webkit-background-clip: unset !important;
   -webkit-text-fill-color: var(--text-primary) !important;
   background-clip: unset !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: relative;
+  margin-bottom: 0.6rem;
 }
 
 h2 {
-  font-size: clamp(2.5rem, 6vw, 4.2rem); // Увеличено
-  font-weight: 700; // Увеличено
-  line-height: 1.2;
-  margin-bottom: 1.5rem; // Увеличено
-  color: var(--text-primary) !important; // Четкий черный цвет
+  font-size: clamp(1.4rem, 3.2vw, 2.5rem); // было 2rem - 3.5rem (-30%)
+  font-weight: 400;
+  color: var(--text-primary) !important;
   background: none !important;
   -webkit-background-clip: unset !important;
   -webkit-text-fill-color: var(--text-primary) !important;
   background-clip: unset !important;
+  margin-bottom: 0.5rem;
 }
 
 h3 {
-  font-size: clamp(2rem, 5vw, 2.8rem); // Увеличено
-  font-weight: 700; // Увеличено
-  line-height: 1.3;
-  margin-bottom: 1.2rem; // Увеличено
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem); // было 1.4rem - 2.2rem
+  font-weight: 400;
   color: var(--text-primary);
-  position: relative;
+  margin-bottom: 0.8rem;
 }
 
 h4 {
-  font-size: clamp(1.6rem, 4vw, 2.2rem); // Увеличено
-  font-weight: 600; // Увеличено
-  margin-bottom: 1rem; // Увеличено
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem); // было 1.1rem - 1.5rem
+  font-weight: 500;
   color: var(--text-primary);
+  margin-bottom: 0.6rem;
 }
 
 p {
-  font-size: clamp(1.15rem, 2vw, 1.35rem); // Увеличено
-  line-height: 1.8;
-  margin-bottom: 1.5rem;
-  color: var(--text-primary); // Более контрастный цвет
-  font-weight: 500; // Увеличено
+  font-size: clamp(1rem, 1.5vw, 1.15rem); // ~20-23px — удобно для взрослых
+  line-height: 1.85;
+  margin-bottom: 1.2rem;
+  color: var(--text-secondary);
+  font-weight: 300;
 }
 
-// Основная структура приложения
-.app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-// Роскошный хедер с glassmorphism эффектом
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--border-light);
-  transition: var(--transition-medium);
-  box-shadow: var(--shadow-medium);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--gradient-rose-gold);
-    opacity: 0.7;
-  }
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(232, 183, 200, 0.3) 20%, 
-      rgba(212, 175, 55, 0.3) 50%, 
-      rgba(232, 183, 200, 0.3) 80%, 
-      transparent 100%);
-  }
-}
-
-.nav {
-  padding: 0.8rem 0;
-}
-
-.nav-container {
-  max-width: var(--container-xl);
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 0 1rem;
-  }
-}
-
-.logo {
-  h2 {
-    font-family: 'Playfair Display', serif;
-    color: var(--primary-rose-dark) !important;
-    margin: 0;
-    font-size: clamp(1.5rem, 3.5vw, 2rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    position: relative;
-    text-shadow: 0 2px 4px rgba(232, 183, 200, 0.2);
-    
-    // Переопределяем глобальные стили h2, которые делают текст прозрачным
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    -webkit-text-fill-color: var(--primary-rose-dark) !important;
-    background-clip: unset !important;
-    opacity: 1 !important;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      top: -5px;
-      right: -25px;
-      width: 12px;
-      height: 12px;
-      background: var(--primary-gold);
-      border-radius: 50%;
-      animation: sparkle 2s ease-in-out infinite;
-      box-shadow: 0 0 8px var(--primary-gold);
-    }
-  }
-  
-  span {
-    font-size: 1.3rem;
-    color: var(--text-primary); // Более контрастный
-    font-weight: 600;
-    margin-top: 0.2rem;
-    display: block;
-    font-style: italic;
-    font-family: 'Great Vibes', cursive;
-    letter-spacing: 0.5px;
-    color: var(--primary-rose-dark); // Более насыщенный
-    
-    @media (max-width: 768px) {
-      font-size: 1.4rem; // Увеличено
-    }
-    
-    @media (max-width: 480px) {
-      font-size: 1.3rem; // Увеличено
-    }
-  }
-}
-
-.nav-list {
-  display: flex;
-  list-style: none;
-  gap: 0.5rem;
-  
-  @media (max-width: 768px) {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.3rem;
-  }
-}
-
-.nav-link {
-  background: none;
-  border: none;
-  padding: 0.6rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary); // Более контрастный
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  font-family: 'Open Sans', sans-serif;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) scaleX(0);
-    width: 60%;
-    height: 2px;
-    background: var(--primary-gold);
-    border-radius: 1px;
-    transition: transform 0.3s ease;
-  }
-  
-  &:hover {
-    color: var(--primary-rose);
-    
-    &::after {
-      transform: translateX(-50%) scaleX(1);
-    }
-  }
-  
-  &.active {
-    background: var(--primary-rose);
-    color: var(--text-white);
-    box-shadow: var(--shadow-soft);
-    
-    &::after {
-      display: none;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    padding: 0.8rem 1.2rem;
-    font-size: 0.9rem;
-  }
-}
-
-// Основной контент
-.main {
-  margin-top: 80px;
-  flex: 1;
-  
-  @media (max-width: 768px) {
-    margin-top: 100px;
-  }
-}
-
-.section {
-  min-height: 100vh;
-  padding: 6rem 0;
-  position: relative;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-  box-sizing: border-box;
-  
-  &:nth-child(even) {
-    background: var(--gradient-elegant);
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(circle at 25% 75%, rgba(168, 181, 160, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 75% 25%, rgba(184, 169, 201, 0.03) 0%, transparent 50%);
-      pointer-events: none;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    padding: 4rem 0;
-    min-height: auto;
-  }
-}
-
-// Контейнер для контента
-.container {
-  max-width: var(--container-xl);
-  margin: 0 auto;
-  padding: 0 2rem;
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  
-  @media (max-width: 768px) {
-    padding: 0 1rem;
-    max-width: 100vw;
-  }
-}
-
-// Глобальные правила для предотвращения переполнения
 img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-// Роскошная система карточек
-.card {
-  background: var(--surface-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-strong); // Более заметная тень
-  border: 2px solid var(--border-strong); // Более толстая и заметная рамка
-  padding: 3.5rem; // Увеличено
-  transition: var(--transition-luxury);
+// ══ LAYOUT ═════════════════════════════════════════════════════
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  
+  z-index: 1;
+}
+
+// ══ HEADER ═════════════════════════════════════════════════════
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--header-h);
+  background: rgba(13, 10, 11, 0.82);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid var(--border-gold);
+  transition: background var(--t-mid), border-color var(--t-mid);
+
+  // Gold top stripe
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: var(--gradient-rose-gold);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: var(--transition-medium);
+    height: 1px;
+    background: var(--grad-gold);
+    opacity: 0.7;
   }
-  
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-luxury);
-    
-    &::before {
-      transform: scaleX(1);
+}
+
+.nav {
+  height: 100%;
+}
+
+.nav-container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 2.5rem;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+
+  @media (max-width: 900px) {
+    padding: 0 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 1.2rem;
+  }
+}
+
+// ── Logo ──────────────────────────────────────────────────────
+.logo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex-shrink: 0;
+
+  h2 {
+    font-family: var(--font-serif) !important;
+    font-size: clamp(1.3rem, 2.5vw, 1.7rem) !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.08em !important;
+    color: var(--gold) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: var(--gold) !important;
+    background-clip: unset !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+    text-transform: uppercase;
+
+    &::after {
+      display: none;
     }
   }
-  
+
+  span {
+    font-family: var(--font-script) !important;
+    font-size: 1.05rem;
+    color: var(--rose) !important;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-top: -0.1rem;
+  }
+}
+
+// ── Nav list ──────────────────────────────────────────────────
+.nav-list {
+  display: flex;
+  list-style: none;
+  gap: 0.2rem;
+  align-items: center;
+
+  @media (max-width: 900px) {
+    gap: 0;
+  }
+
   @media (max-width: 768px) {
-    padding: 2rem;
-    border-radius: var(--radius-lg);
+    display: none;
   }
-  
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: var(--r-xs);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+  position: relative;
+  white-space: nowrap;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 70%;
+    height: 1px;
+    background: var(--gold);
+    transition: transform var(--t-mid);
+    transform-origin: center;
+  }
+
+  &:hover {
+    color: var(--gold);
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  &.active {
+    color: var(--gold);
+    background: rgba(201, 169, 110, 0.08);
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  @media (max-width: 900px) {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.76rem;
+  }
+}
+
+// ── Mobile hamburger ──────────────────────────────────────────
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color var(--t-fast);
+
+  &:hover {
+    border-color: var(--gold);
+  }
+
+  span {
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: var(--gold);
+    transition: transform var(--t-mid), opacity var(--t-mid);
+    transform-origin: center;
+  }
+
+  &.open {
+    span:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    span:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+// ── Mobile drawer ─────────────────────────────────────────────
+.nav-drawer {
+  display: none;
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13, 10, 11, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity var(--t-mid), transform var(--t-mid);
+
+  &.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+.nav-drawer__link {
+  background: none;
+  border: none;
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.8rem 2rem;
+  transition: color var(--t-fast);
+  text-transform: uppercase;
+
+  &:hover,
+  &.active {
+    color: var(--gold);
+  }
+}
+
+.nav-drawer__divider {
+  width: 40px;
+  height: 1px;
+  background: var(--border-gold);
+  margin: 0.5rem 0;
+}
+
+// ══ MAIN ═══════════════════════════════════════════════════════
+.main {
+  margin-top: var(--header-h);
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.section {
+  min-height: 100vh;
+  padding: 3.5rem 0;
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+
+  &:nth-child(even) {
+    background: rgba(26, 20, 25, 0.40);
+  }
+
+  @media (max-width: 768px) {
+    padding: 5rem 0;
+    min-height: auto;
+  }
+}
+
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 2.5rem;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 0 1.25rem;
+  }
+}
+
+// ══ SECTION TITLE ══════════════════════════════════════════════
+.section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 3.5vw, 3rem); // было 2.5rem - 4.2rem
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 0.4rem;
+
+  &.gradient-text {
+    background: var(--grad-gold) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+  }
+}
+
+.section-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.5rem auto 1.2rem;
+
+  &::before,
+  &::after {
+    content: '';
+    height: 1px;
+    width: 60px;
+    background: var(--grad-gold);
+    opacity: 0.5;
+  }
+
+  span {
+    color: var(--gold);
+    font-size: 1.05rem;
+    letter-spacing: 0.15em;
+    font-family: var(--font-sans);
+    font-weight: 300;
+    text-transform: uppercase;
+  }
+}
+
+// ── Global gradient-text (used in several pages) ──────────────
+.gradient-text {
+  font-family: var(--font-serif) !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase;
+  background: var(--grad-gold) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  display: inline-block;
+}
+
+// ══ CARD SYSTEM ════════════════════════════════════════════════
+.card {
+  background: var(--surface-card);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-gold);
+  padding: 2.5rem;
+  transition: border-color var(--t-mid), box-shadow var(--t-mid), transform var(--t-mid);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-md);
+
+  // Gold top accent
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--grad-gold);
+    opacity: 0;
+    transition: opacity var(--t-mid);
+  }
+
+  &:hover {
+    border-color: var(--border-gold-strong);
+    box-shadow: var(--shadow-lg), var(--shadow-gold);
+    transform: translateY(-4px);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.75rem;
+    border-radius: var(--r-md);
+
+    &:hover {
+      transform: none;
+    }
+  }
+
   @media (max-width: 480px) {
-    padding: 1.5rem;
-  }
-  
-  @media (max-width: 360px) {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 }
 
 .card--highlight {
-  background: var(--surface-primary);
-  border: 2px solid var(--primary-gold);
-  box-shadow: var(--shadow-soft);
-  position: relative;
-  
+  background: var(--surface-card);
+  border: 1px solid var(--border-gold-strong);
+  box-shadow: var(--shadow-gold);
+
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: var(--primary-gold);
+    height: 1px;
+    background: var(--grad-gold);
+    opacity: 1;
   }
 }
 
 .card--accent-gradient {
-  background: var(--gradient-rose);
-  color: var(--text-white);
-  border: none;
-  box-shadow: var(--shadow-medium);
-  position: relative;
-  
+  background: linear-gradient(145deg,
+      rgba(35, 29, 34, 0.97) 0%,
+      rgba(26, 20, 25, 0.99) 100%);
+  border: 1px solid var(--border-gold-strong);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+  color: var(--text-primary);
+
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: var(--primary-gold);
+    height: 1px;
+    background: var(--grad-gold);
+    opacity: 0.8;
   }
 }
 
-// Улучшенная система кнопок
+// ══ BUTTON SYSTEM ══════════════════════════════════════════════
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem; // Увеличено
-  border: none;
-  border-radius: var(--radius-lg);
-  font-family: 'Open Sans', sans-serif;
-  font-size: 1.15rem; // Увеличено
-  font-weight: 700; // Увеличено
+  gap: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--r-full);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: var(--transition-luxury);
-  padding: 1.4rem 3rem; // Увеличено
+  transition: all var(--t-mid);
+  padding: 1.1rem 2.6rem;
   text-decoration: none;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  
+
+  // Shimmer sweep
   &::before {
     content: '';
     position: absolute;
@@ -576,126 +748,107 @@ img {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(255, 255, 255, 0.2) 50%, 
-      transparent 100%);
-    transition: var(--transition-medium);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.08) 50%,
+        transparent 100%);
+    transition: left var(--t-slow);
   }
-  
+
   &:hover::before {
     left: 100%;
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
 .btn-primary {
-  background: var(--primary-rose-dark); // Более насыщенный
-  color: var(--text-white);
-  box-shadow: var(--shadow-strong); // Более заметная тень
-  transition: all 0.3s ease;
-  font-weight: 700;
-  border: 3px solid var(--primary-gold-dark); // Более толстая рамка
-  
+  background: transparent;
+  color: var(--gold);
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 0 var(--gold);
+
   &:hover {
-    background: #C08A9B; // Еще более темный
+    background: var(--gold);
+    color: var(--noir);
+    box-shadow: var(--shadow-gold);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-strong);
-    border-color: var(--primary-gold-dark);
-  }
-  
-  &:active {
-    transform: translateY(0) scale(0.98);
   }
 }
 
 .btn-secondary {
-  background: var(--surface-primary);
-  color: var(--primary-rose-dark);
-  border: 3px solid var(--primary-rose-dark); // Более толстая рамка
-  box-shadow: var(--shadow-medium); // Более заметная тень
-  transition: all 0.3s ease;
-  font-weight: 700;
-  
+  background: transparent;
+  color: var(--rose);
+  border-color: var(--rose-dark);
+
   &:hover {
-    background: var(--primary-rose-dark);
-    color: var(--text-white);
-    border-color: var(--primary-rose-dark);
+    background: rgba(212, 165, 165, 0.12);
+    border-color: var(--rose);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-strong);
   }
 }
 
-// Элегантная система тегов
+.btn-sm {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.75rem;
+}
+
+// ══ TAG ════════════════════════════════════════════════════════
 .tag {
   display: inline-block;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: var(--radius-md);
-  padding: 0.6rem 1.4rem;
-  background: var(--gradient-sage);
-  color: var(--text-white);
-  margin: 0 0.4rem 0.6rem 0;
-  transition: var(--transition-medium);
-  box-shadow: var(--shadow-soft);
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(255, 255, 255, 0.2) 50%, 
-      transparent 100%);
-    transition: var(--transition-medium);
-  }
-  
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--r-full);
+  padding: 0.4rem 1.1rem;
+  background: rgba(201, 169, 110, 0.10);
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+  margin: 0 0.3rem 0.4rem 0;
+  transition: all var(--t-fast);
+
   &:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: var(--shadow-medium);
-    
-    &::before {
-      left: 0;
-    }
+    background: rgba(201, 169, 110, 0.18);
+    border-color: var(--gold);
+    transform: translateY(-1px);
   }
 }
 
 .tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
   align-items: center;
 }
 
-// Сетка с улучшенными отступами
+// ══ GRID ═══════════════════════════════════════════════════════
 .grid {
   display: grid;
-  gap: 3rem;
-  
+  gap: 2rem;
+
   &.grid-1 {
     grid-template-columns: 1fr;
   }
-  
+
   &.grid-2 {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
-  
+
   &.grid-3 {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
-  
+
   &.grid-4 {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
-  
+
   @media (max-width: 768px) {
-    gap: 2rem;
-    
+    gap: 1.25rem;
+
     &.grid-2,
     &.grid-3,
     &.grid-4 {
@@ -704,53 +857,188 @@ img {
   }
 }
 
-// Футер в стиле бренд-бука
+// ══ FOOTER ═════════════════════════════════════════════════════
 .footer {
-  background: #000000; // Черный фон
-  padding: 4rem 0 3rem;
+  background: #130F1C;
+  padding: 3.5rem 0 2.5rem;
   text-align: center;
-  border-top: 2px solid var(--primary-gray);
+  border-top: 1px solid var(--border-gold);
   position: relative;
-  
+  z-index: 1;
+
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: var(--gradient-rose-gold);
+    height: 1px;
+    background: var(--grad-gold);
+    opacity: 0.8;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(201, 169, 110, 0.04), transparent);
+    pointer-events: none;
   }
 }
 
 .footer-content {
-  max-width: var(--container-xl);
+  max-width: var(--max-w);
   margin: 0 auto;
-  padding: 0 2rem;
-  
+  padding: 0 2.5rem;
+
+  .footer-logo {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+
+  .footer-tagline {
+    font-family: var(--font-script);
+    font-size: 1.25rem;
+    color: var(--rose);
+    margin-bottom: 1.5rem !important;
+  }
+
   p {
-    color: #FFFFFF !important; // Белый цвет текста
-    margin-bottom: 0.8rem;
-    font-size: 1.5rem !important; // Увеличенный размер
-    font-weight: 500 !important; // Более жирный шрифт
-    
+    color: var(--text-muted) !important;
+    margin-bottom: 0.4rem;
+    font-size: 0.88rem !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.06em;
+
     &:last-child {
       margin-bottom: 0;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      font-style: italic;
-      font-family: 'Great Vibes', cursive;
-      color: var(--primary-rose);
+      font-size: 0.72rem !important;
+      opacity: 0.5;
     }
   }
 }
 
-// Магические анимации
+// ══ UTILITY CLASSES ════════════════════════════════════════════
+.text-center {
+  text-align: center;
+}
+
+.mb-4 {
+  margin-bottom: 2rem;
+}
+
+.mb-5 {
+  margin-bottom: 3rem;
+}
+
+.mt-5 {
+  margin-top: 3rem;
+}
+
+// Card title variants
+.card-title--light {
+  font-family: var(--font-serif);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--text-primary) !important;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+
+  &::before {
+    display: none !important;
+  }
+
+  &::after {
+    display: none !important;
+  }
+}
+
+.page-intro {
+  text-align: center;
+  margin-bottom: 0.5rem;
+
+  &__title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.5rem, 6vw, 3.5rem);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--grad-gold) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Info list (PriceList)
+.info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-list__item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.info-list__icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.info-title-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.75rem;
+}
+
+// ══ ANIMATIONS ═════════════════════════════════════════════════
+@keyframes aurora-shift {
+  0% {
+    opacity: 0.7;
+    transform: scale(1) translateX(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateX(2%);
+  }
+
+  100% {
+    opacity: 0.8;
+    transform: scale(1) translateX(-1%);
+  }
+}
+
 @keyframes sparkle {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1) rotate(0deg);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(1.2) rotate(180deg);
@@ -760,8 +1048,9 @@ img {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(60px);
+    transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -771,8 +1060,9 @@ img {
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -780,216 +1070,69 @@ img {
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
+
+  0%,
+  100% {
+    transform: translateY(0);
   }
+
   50% {
-    transform: translateY(-15px);
+    transform: translateY(-10px);
   }
 }
 
 @keyframes glow {
-  0%, 100% {
-    box-shadow: var(--shadow-medium);
+
+  0%,
+  100% {
+    box-shadow: var(--shadow-md);
   }
+
   50% {
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-gold);
   }
 }
 
 @keyframes shimmer {
   0% {
-    background-position: -200% 0;
+    background-position: -200% center;
   }
+
   100% {
-    background-position: 200% 0;
+    background-position: 200% center;
   }
 }
 
-// Утилиты для анимаций
-.animate-fade-in-up {
-  animation: fadeInUp 0.8s var(--transition-luxury);
-}
-
-.animate-fade-in-scale {
-  animation: fadeInScale 0.6s var(--transition-luxury);
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-.animate-glow {
-  animation: glow 3s ease-in-out infinite;
-}
-
-// Утилиты
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
-
-.mb-1 { margin-bottom: 0.5rem; }
-.mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
-.mb-4 { margin-bottom: 2rem; }
-.mb-5 { margin-bottom: 3rem; }
-
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
-.mt-5 { margin-top: 3rem; }
-
-.gradient-text {
-  background: var(--gradient-rose-gold);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-}
-
-.gradient-text--mystical {
-  background: var(--gradient-mystical);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-}
-
-// Особые эффекты
-.glass-effect {
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.shimmer-effect {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-// Улучшенные заголовки страниц
-.page-intro {
-  text-align: center;
-  margin-bottom: 4rem;
-  position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 4px;
-    background: var(--gradient-rose-gold);
-    border-radius: 2px;
-    opacity: 0.7;
+@keyframes drift {
+  0% {
+    background-position: 0 0, 20px 30px;
   }
-  
-  &__title {
-    margin-bottom: 1.5rem;
-    position: relative;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -15px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 3px;
-      background: var(--gradient-gold);
-      border-radius: 2px;
-      box-shadow: var(--shadow-soft);
-    }
-  }
-  
-  &__subtitle {
-    font-size: clamp(1.2rem, 3vw, 1.6rem);
-    color: var(--text-secondary);
-    max-width: 800px;
-    margin: 0 auto;
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    line-height: 1.8;
-    font-weight: 400;
-    position: relative;
-    
-    &::before {
-      content: '"';
-      position: absolute;
-      left: -20px;
-      top: -10px;
-      font-size: 3rem;
-      color: var(--primary-rose);
-      opacity: 0.3;
-      font-family: 'Playfair Display', serif;
-    }
-    
-    &::after {
-      content: '"';
-      position: absolute;
-      right: -20px;
-      bottom: -20px;
-      font-size: 3rem;
-      color: var(--primary-rose);
-      opacity: 0.3;
-      font-family: 'Playfair Display', serif;
-    }
+
+  100% {
+    background-position: 40px 40px, 60px 70px;
   }
 }
 
-// Отзывчивые улучшения
-@media (max-width: 480px) {
-  .page-intro {
-    &__subtitle {
-      &::before,
-      &::after {
-        display: none;
-      }
-    }
-  }
-  
-  .card {
-    padding: 1.5rem;
-  }
-  
-  .btn {
-    padding: 1rem 2rem;
-    font-size: 0.95rem;
+// ══ SCROLLBAR ══════════════════════════════════════════════════
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--noir);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-gold-strong);
+  border-radius: var(--r-full);
+
+  &:hover {
+    background: var(--gold);
   }
 }
 
-h1::after,
-h2::after,
-h3::before,
-h3::after,
-h4::after,
-.card-title::before,
-.card-title::after,
-.card-title--light::before,
-.card-title--light::after,
-.page-intro__title::after,
-.page-intro__title::before,
-.page-intro__subtitle::after,
-.page-intro__subtitle::before {
-  display: none !important;
-  content: none !important;
-  background: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  position: static !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-  animation: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
+// ══ SELECTION ══════════════════════════════════════════════════
+::selection {
+  background: rgba(201, 169, 110, 0.25);
+  color: var(--gold);
 }
-
