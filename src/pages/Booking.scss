@@ -509,6 +509,7 @@
   color: var(--text-primary);
   transition: border-color var(--t-fast), box-shadow var(--t-fast);
   -webkit-appearance: none;
+  appearance: none;
 
   &:focus {
     outline: none;
@@ -520,6 +521,11 @@
   &::placeholder {
     color: var(--text-muted);
     font-weight: 300;
+  }
+
+  option {
+    background-color: var(--noir);
+    color: var(--text-primary);
   }
 
   // Date input
