@@ -574,7 +574,7 @@ const Admin: React.FC = () => {
   return (
     <div className="admin-panel">
       <div className="admin-header">
-        <h1>Админ-панель управления записями</h1>
+        <h1 className="gradient-text">Админ-панель управления записями</h1>
         <motion.button
           onClick={handleLogout}
           className="btn btn-secondary"
