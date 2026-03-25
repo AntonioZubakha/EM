@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay, isBefore, startOfDay } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  format, addMonths, subMonths,
+  startOfMonth, endOfMonth, eachDayOfInterval,
+  isSameDay, isToday, getDay, isBefore, startOfDay,
+} from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { getBookedSlotsForDate, releaseSlot } from '../utils/bookingSlots';
 import { isWorkingDayBase, setDayStatus, loadWorkingDaysOverrides } from '../utils/workingDays';
@@ -9,69 +13,51 @@ import './Admin.scss';
 
 const ADMIN_LOGIN = import.meta.env.VITE_ADMIN_LOGIN || 'admin';
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
-
 const AUTH_PERSIST_KEY = 'admin_auth_persist';
-const AUTH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней
+const AUTH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-type SlotFormData = {
-  time: string;
-  name: string;
-  services: string[];
-  note: string;
+type SlotFormData = { time: string; name: string; services: string[]; note: string };
+
+const parseDurationToMinutes = (d: string): number => {
+  let m = 0;
+  const h = d.match(/(\d+)\s*ч/);
+  if (h) m += parseInt(h[1]) * 60;
+  const mn = d.match(/(\d+)\s*мин/);
+  if (mn) m += parseInt(mn[1]);
+  return m;
 };
 
-const parseDurationToMinutes = (duration: string): number => {
-  let totalMinutes = 0;
-  const hoursMatch = duration.match(/(\d+)\s*ч/);
-  if (hoursMatch) {
-    totalMinutes += parseInt(hoursMatch[1]) * 60;
-  }
-  const minutesMatch = duration.match(/(\d+)\s*мин/);
-  if (minutesMatch) {
-    totalMinutes += parseInt(minutesMatch[1]);
-  }
-  return totalMinutes;
+const calculateTotalDuration = (svcs: string[]): number => {
+  if (!svcs.length) return 0;
+  return svcs.reduce((acc, name) => {
+    const s = pricelistData.manicure.find(x => x.name === name)
+      ?? pricelistData.pedicure.find(x => x.name === name);
+    return acc + (s ? parseDurationToMinutes(s.duration) : 0);
+  }, 0);
 };
 
-const calculateTotalDuration = (selectedServices: string[]): number => {
-  if (selectedServices.length === 0) return 0;
-  let totalMinutes = 0;
-  selectedServices.forEach(serviceName => {
-    const manicureService = pricelistData.manicure.find(s => s.name === serviceName);
-    if (manicureService) {
-      totalMinutes += parseDurationToMinutes(manicureService.duration);
-    } else {
-      const pedicureService = pricelistData.pedicure.find(s => s.name === serviceName);
-      if (pedicureService) {
-        totalMinutes += parseDurationToMinutes(pedicureService.duration);
-      }
-    }
-  });
-  return totalMinutes;
-};
-
-const getNextTimeSlots = (startTime: string, durationMinutes: number): string[] => {
+const getNextTimeSlots = (start: string, mins: number): string[] => {
   const slots: string[] = [];
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const numberOfSlots = Math.ceil(durationMinutes / 30);
-  let currentMinutes = startHour * 60 + startMinute;
-  for (let i = 0; i < numberOfSlots; i++) {
-    const hour = Math.floor(currentMinutes / 60);
-    const minute = currentMinutes % 60;
-    if (hour > 20 || (hour === 20 && minute > 0)) break;
-    const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-    slots.push(timeStr);
-    currentMinutes += 30;
+  const [h, m] = start.split(':').map(Number);
+  const count = Math.ceil(mins / 30);
+  let cur = h * 60 + m;
+  for (let i = 0; i < count; i++) {
+    const hr = Math.floor(cur / 60), mn = cur % 60;
+    if (hr > 20 || (hr === 20 && mn > 0)) break;
+    slots.push(`${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}`);
+    cur += 30;
   }
   return slots;
 };
+
+interface BookedSlotData { date: string; time: string; name?: string; service?: string }
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  
+  const [loginError, setLoginError] = useState('');
+
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -80,91 +66,61 @@ const Admin: React.FC = () => {
   const [workingDaysOverrides, setWorkingDaysOverrides] = useState<Record<string, 'working' | 'off'>>({});
   const [showSlotForm, setShowSlotForm] = useState(false);
   const [slotFormData, setSlotFormData] = useState<SlotFormData>({ time: '', name: '', services: [], note: '' });
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggeredRef = useRef<boolean>(false);
-  const [isLongPressing, setIsLongPressing] = useState(false);
 
-  // Генерируем получасовые слоты с 09:00 до 20:00 (последний слот 20:00)
+  const slotsPanelRef = useRef<HTMLElement>(null);
+
   const timeSlots = useMemo(() => {
-    const slots: string[] = [];
-    for (let hour = 9; hour <= 20; hour++) {
-      slots.push(`${String(hour).padStart(2, '0')}:00`);
-      if (hour < 20) { // 20:30 не добавляем, последний слот 20:00
-        slots.push(`${String(hour).padStart(2, '0')}:30`);
-      }
+    const s: string[] = [];
+    for (let h = 9; h <= 20; h++) {
+      s.push(`${String(h).padStart(2, '0')}:00`);
+      if (h < 20) s.push(`${String(h).padStart(2, '0')}:30`);
     }
-    return slots;
+    return s;
   }, []);
 
-  // Генерируем список всех процедур из прайс-листа
-  const allServices = useMemo(() => {
-    const serviceList: string[] = [];
-    
-    // Добавляем все услуги из категории "manicure"
-    pricelistData.manicure.forEach((service: { name: string }) => {
-      serviceList.push(service.name);
-    });
-    
-    // Добавляем все услуги из категории "pedicure"
-    pricelistData.pedicure.forEach((service: { name: string }) => {
-      serviceList.push(service.name);
-    });
-    
-    return serviceList;
-  }, []);
+  const allServices = useMemo(() => [
+    ...pricelistData.manicure.map(s => s.name),
+    ...pricelistData.pedicure.map(s => s.name),
+  ], []);
 
-  // Проверка авторизации при загрузке (с учётом "запомнить на неделю")
+  // ── Auth ──────────────────────────────────────────────────────
   useEffect(() => {
-    const sessionAuth = sessionStorage.getItem('admin_auth');
-    if (sessionAuth === 'true') {
-      setIsAuthenticated(true);
-      return;
-    }
-
+    if (sessionStorage.getItem('admin_auth') === 'true') { setIsAuthenticated(true); return; }
     try {
-      const persisted = localStorage.getItem(AUTH_PERSIST_KEY);
-      if (persisted) {
-        const parsed = JSON.parse(persisted) as { value: string; expires: number };
-        if (parsed.value === 'true' && parsed.expires > Date.now()) {
+      const raw = localStorage.getItem(AUTH_PERSIST_KEY);
+      if (raw) {
+        const { value, expires } = JSON.parse(raw);
+        if (value === 'true' && expires > Date.now()) {
           setIsAuthenticated(true);
-          sessionStorage.setItem('admin_auth', 'true'); // обновляем сессию
-        } else if (parsed.expires <= Date.now()) {
+          sessionStorage.setItem('admin_auth', 'true');
+        } else if (expires <= Date.now()) {
           localStorage.removeItem(AUTH_PERSIST_KEY);
         }
       }
-    } catch {
-      // игнорируем ошибки чтения/парсинга
-    }
+    } catch { /* ignore */ }
   }, []);
 
-  // Загрузка переопределений рабочих дней
   useEffect(() => {
-    if (isAuthenticated) {
-      loadWorkingDaysOverrides().then(overrides => {
-        setWorkingDaysOverrides(overrides);
-      });
-    }
+    if (isAuthenticated) loadWorkingDaysOverrides().then(setWorkingDaysOverrides);
   }, [isAuthenticated, currentMonth]);
 
+  // Auto-scroll to slots panel when date selected on mobile
+  useEffect(() => {
+    if (selectedDate && slotsPanelRef.current && window.innerWidth < 768) {
+      setTimeout(() => slotsPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    }
+  }, [selectedDate]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
-    if (!ADMIN_PASSWORD) {
-      setError('Админ-панель не настроена. Обратитесь к администратору.');
-      return;
-    }
-    
+    setLoginError('');
+    if (!ADMIN_PASSWORD) { setLoginError('Панель не настроена.'); return; }
     if (login === ADMIN_LOGIN && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       sessionStorage.setItem('admin_auth', 'true');
-      localStorage.setItem(AUTH_PERSIST_KEY, JSON.stringify({
-        value: 'true',
-        expires: Date.now() + AUTH_TTL_MS,
-      }));
+      localStorage.setItem(AUTH_PERSIST_KEY, JSON.stringify({ value: 'true', expires: Date.now() + AUTH_TTL_MS }));
     } else {
-      setError('Неверный логин или пароль');
+      setLoginError('Неверный логин или пароль');
     }
   };
 
@@ -176,108 +132,86 @@ const Admin: React.FC = () => {
     setBookedSlots([]);
   };
 
-  interface BookedSlotData {
-    date: string;
-    time: string;
-    name?: string;
-    service?: string;
-  }
-
+  // ── Slots loading ─────────────────────────────────────────────
   const loadBookedSlots = useCallback(async () => {
     if (!selectedDate) return;
-    
     setLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      
-      // Получаем полную информацию о слотах
-      const response = await fetch(`${API_BASE_URL}/booked-slots?date=${dateStr}`);
-      if (response.ok) {
-        const data = await response.json();
-        const slotsForDate = (data.bookedSlots as BookedSlotData[]).filter((slot) => slot.date === dateStr);
-        
-        const times = slotsForDate.map((slot) => slot.time);
+      const res = await fetch(`${API}/booked-slots?date=${dateStr}`);
+      if (res.ok) {
+        const data = await res.json();
+        const daySlots = (data.bookedSlots as BookedSlotData[]).filter(s => s.date === dateStr);
+        setBookedSlots(daySlots.map(s => s.time));
         const info: Record<string, { name?: string; service?: string }> = {};
-        
-        slotsForDate.forEach((slot) => {
-          info[slot.time] = {
-            name: slot.name,
-            service: slot.service,
-          };
-        });
-        
-        setBookedSlots(times);
+        daySlots.forEach(s => { info[s.time] = { name: s.name, service: s.service }; });
         setBookedSlotsInfo(info);
       } else {
-        // Fallback на старый метод
-        const slots = await getBookedSlotsForDate(selectedDate);
-        setBookedSlots(slots);
+        setBookedSlots(await getBookedSlotsForDate(selectedDate));
         setBookedSlotsInfo({});
       }
-    } catch (error) {
-      console.error('Ошибка при загрузке слотов:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   }, [selectedDate]);
 
-  // Загрузка занятых слотов при выборе даты (только для рабочих дней)
   useEffect(() => {
-    if (selectedDate) {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const hasOverride = dateStr in workingDaysOverrides;
-      const baseIsWorking = isWorkingDayBase(selectedDate);
-      const isWorking = hasOverride 
-        ? workingDaysOverrides[dateStr] === 'working'
-        : baseIsWorking;
-      
-      if (isWorking) {
-        loadBookedSlots();
-      } else {
-        setBookedSlots([]);
-        setSelectedDate(null);
-      }
-    }
+    if (!selectedDate) return;
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+    const isWorking = dateStr in workingDaysOverrides
+      ? workingDaysOverrides[dateStr] === 'working'
+      : isWorkingDayBase(selectedDate);
+    if (isWorking) { loadBookedSlots(); }
+    else { setBookedSlots([]); setSelectedDate(null); }
   }, [selectedDate, workingDaysOverrides, loadBookedSlots]);
 
-  const handleToggleSlot = async (time: string) => {
-    console.log('handleToggleSlot вызвана для времени:', time);
-    if (!selectedDate) {
-      console.log('Нет выбранной даты');
-      return;
-    }
-    
-    if (bookedSlots.includes(time)) {
-      // Освобождаем слот с подтверждением
-      const slotInfo = bookedSlotsInfo[time];
-      const clientInfo = slotInfo?.name ? ` (${slotInfo.name}${slotInfo?.service ? ` - ${slotInfo.service}` : ''})` : '';
-      const confirmMessage = `Вы уверены, что хотите освободить слот ${time}${clientInfo}?`;
-      
-      if (!confirm(confirmMessage)) {
-        return;
+  // ── Day actions ───────────────────────────────────────────────
+  const handleDaySelect = useCallback((day: Date) => {
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const isWorking = dateStr in workingDaysOverrides
+      ? workingDaysOverrides[dateStr] === 'working'
+      : isWorkingDayBase(day);
+    if (isWorking) setSelectedDate(day);
+  }, [workingDaysOverrides]);
+
+  const handleToggleDayStatus = useCallback(async (day: Date, e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const dateStr = format(day, 'yyyy-MM-dd');
+    const isWorking = dateStr in workingDaysOverrides
+      ? workingDaysOverrides[dateStr] === 'working'
+      : isWorkingDayBase(day);
+    const newStatus: 'working' | 'off' = isWorking ? 'off' : 'working';
+    setLoading(true);
+    try {
+      const ok = await setDayStatus(day, newStatus);
+      if (ok) {
+        setWorkingDaysOverrides(prev => ({ ...prev, [dateStr]: newStatus }));
+        if (newStatus === 'off' && selectedDate && isSameDay(day, selectedDate)) {
+          setSelectedDate(null);
+          setBookedSlots([]);
+        }
       }
-      
-      console.log('Освобождаем слот:', time);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  }, [workingDaysOverrides, selectedDate]);
+
+  // ── Slot actions ──────────────────────────────────────────────
+  const handleToggleSlot = async (time: string) => {
+    if (!selectedDate) return;
+    if (bookedSlots.includes(time)) {
+      const info = bookedSlotsInfo[time];
+      const clientStr = info?.name ? ` (${info.name}${info.service ? ` — ${info.service}` : ''})` : '';
+      if (!confirm(`Освободить слот ${time}${clientStr}?`)) return;
       setLoading(true);
       try {
-        const success = await releaseSlot(selectedDate, time);
-        if (success) {
-          setBookedSlots(prev => prev.filter(slot => slot !== time));
-          setBookedSlotsInfo(prev => {
-            const updated = { ...prev };
-            delete updated[time];
-            return updated;
-          });
+        if (await releaseSlot(selectedDate, time)) {
+          setBookedSlots(p => p.filter(s => s !== time));
+          setBookedSlotsInfo(p => { const u = { ...p }; delete u[time]; return u; });
         }
-      } catch (error) {
-        console.error('Ошибка при освобождении слота:', error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
     } else {
-      // Показываем форму для ввода данных
-      console.log('Показываем форму для слота:', time);
       setSlotFormData({ time, name: '', services: [], note: '' });
       setShowSlotForm(true);
     }
@@ -285,554 +219,434 @@ const Admin: React.FC = () => {
 
   const handleCloseSlot = async () => {
     if (!selectedDate || !slotFormData.time) return;
-    
     setLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const selectedServices = slotFormData.services.filter(Boolean);
-      let servicesText = selectedServices.join(', ');
-      if (slotFormData.note) {
-        servicesText = servicesText ? `${servicesText} (${slotFormData.note})` : slotFormData.note;
-      }
-      if (!servicesText) {
-        servicesText = 'Закрыто администратором';
-      }
-      const totalDuration = calculateTotalDuration(selectedServices);
-      const durationMinutes = totalDuration > 0 ? totalDuration : 30;
-      const slotsToBook = getNextTimeSlots(slotFormData.time, durationMinutes);
-      
-      const response = await fetch(`${API_BASE_URL}/booked-slots`, {
+      const selectedSvcs = slotFormData.services.filter(Boolean);
+      let svcText = selectedSvcs.join(', ');
+      if (slotFormData.note) svcText = svcText ? `${svcText} (${slotFormData.note})` : slotFormData.note;
+      if (!svcText) svcText = 'Закрыто администратором';
+      const duration = calculateTotalDuration(selectedSvcs) || 30;
+      const slotsToBook = getNextTimeSlots(slotFormData.time, duration);
+      const res = await fetch(`${API}/booked-slots`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: dateStr,
-          time: slotFormData.time,
-          name: slotFormData.name || 'Админ',
-          service: servicesText,
-          durationMinutes,
+          date: dateStr, time: slotFormData.time,
+          name: slotFormData.name || 'Админ', service: svcText, durationMinutes: duration,
         }),
       });
-      
-      if (response.ok) {
-        const updatedSlots = await getBookedSlotsForDate(selectedDate);
-        setBookedSlots(updatedSlots);
-        setBookedSlotsInfo(prev => {
-          const updatedInfo = { ...prev };
-          slotsToBook.forEach(slot => {
-            updatedInfo[slot] = {
-            name: slotFormData.name || 'Админ',
-              service: servicesText,
-            };
-          });
-          return updatedInfo;
+      if (res.ok) {
+        const updated = await getBookedSlotsForDate(selectedDate);
+        setBookedSlots(updated);
+        setBookedSlotsInfo(p => {
+          const u = { ...p };
+          slotsToBook.forEach(s => { u[s] = { name: slotFormData.name || 'Админ', service: svcText }; });
+          return u;
         });
         setShowSlotForm(false);
         setSlotFormData({ time: '', name: '', services: [], note: '' });
       }
-    } catch (error) {
-      console.error('Ошибка при закрытии слота:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const handleClearAllSlots = async () => {
-    if (!selectedDate || !confirm('Вы уверены, что хотите очистить все слоты на этот день?')) {
-      return;
-    }
-    
+    if (!selectedDate || !confirm('Очистить все слоты на этот день?')) return;
     setLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      
-      // Удаляем все слоты по одному
       for (const time of bookedSlots) {
-        await fetch(`${API_BASE_URL}/booked-slots/${dateStr}/${time}`, {
+        await fetch(`${API}/booked-slots/${dateStr}/${time}`, {
           method: 'DELETE',
-          headers: {
-            'x-admin-token': adminToken || '',
-          },
+          headers: { 'x-admin-token': adminToken || '' },
         });
       }
-      
       setBookedSlots([]);
       setBookedSlotsInfo({});
-    } catch (error) {
-      console.error('Ошибка при очистке слотов:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  const handleToggleDayStatus = useCallback(async (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const hasOverride = dateStr in workingDaysOverrides;
-    const baseIsWorking = isWorkingDayBase(date);
-    
-    // Определяем текущий статус
-    const currentIsWorking = hasOverride 
-      ? workingDaysOverrides[dateStr] === 'working'
-      : baseIsWorking;
-    
-    // Переключаем на противоположное
-    const newStatus: 'working' | 'off' = currentIsWorking ? 'off' : 'working';
-    
-    setLoading(true);
-    try {
-      const success = await setDayStatus(date, newStatus);
-      if (success) {
-        setWorkingDaysOverrides(prev => ({
-          ...prev,
-          [dateStr]: newStatus,
-        }));
-        // Если день стал выходным и был выбран, сбрасываем выбор
-        if (newStatus === 'off' && selectedDate && isSameDay(date, selectedDate)) {
-          setSelectedDate(null);
-          setBookedSlots([]);
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка при изменении статуса дня:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [workingDaysOverrides, selectedDate]);
-
-  // Обработчики для long press на мобильных
-  const handleTouchStart = useCallback((_e: React.TouchEvent, date: Date) => {
-    // Проверяем, что это мобильное устройство (ширина экрана <= 768px)
-    if (window.innerWidth > 768) return;
-    
-    longPressTriggeredRef.current = false;
-    setIsLongPressing(false);
-    
-    const timer = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      setIsLongPressing(true);
-      handleToggleDayStatus(date);
-    }, 600); // 600ms для long press
-    longPressTimerRef.current = timer;
-  }, [handleToggleDayStatus]);
-
-  const handleTouchEnd = useCallback((_e: React.TouchEvent, date: Date) => {
-    // Проверяем, что это мобильное устройство
-    if (window.innerWidth > 768) return;
-    
-    const wasLongPress = longPressTriggeredRef.current;
-    
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    
-    // Если не было long press, делаем обычный клик (выбор дня)
-    if (!wasLongPress) {
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const hasOverride = dateStr in workingDaysOverrides;
-      const baseIsWorking = isWorkingDayBase(date);
-      const isWorking = hasOverride 
-        ? workingDaysOverrides[dateStr] === 'working'
-        : baseIsWorking;
-      
-      if (isWorking) {
-        setSelectedDate(date);
-      }
-    }
-    
-    // Сбрасываем флаги через небольшую задержку
-    setTimeout(() => {
-      setIsLongPressing(false);
-      longPressTriggeredRef.current = false;
-    }, 100);
-  }, [workingDaysOverrides]);
-
-  const handleTouchCancel = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    setIsLongPressing(false);
-    longPressTriggeredRef.current = false;
-  };
-
-  // Генерация календаря с использованием useMemo для пересчета при изменении workingDaysOverrides
+  // ── Calendar cells ────────────────────────────────────────────
   const calendarDays = useMemo(() => {
-    const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
-    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    const startingDayIndex = getDay(monthStart) === 0 ? 6 : getDay(monthStart) - 1;
+    const start = startOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start, end: endOfMonth(currentMonth) });
+    const offset = getDay(start) === 0 ? 6 : getDay(start) - 1;
+    const today = startOfDay(new Date());
 
-    const emptyDays = Array.from({ length: startingDayIndex }, (_, i) => (
-      <div key={`empty-${i}`} className="calendar-day empty"></div>
+    const empties = Array.from({ length: offset }, (_, i) => (
+      <div key={`e-${i}`} className="cal-day cal-day--empty" aria-hidden="true" />
     ));
 
-    const days = daysInMonth.map((day) => {
-      const isSelected = selectedDate && isSameDay(day, selectedDate);
-      const isCurrentToday = isToday(day);
+    const cells = days.map(day => {
       const dateStr = format(day, 'yyyy-MM-dd');
-      
-      // Определяем статус дня
-      const hasOverride = dateStr in workingDaysOverrides;
-      const baseIsWorking = isWorkingDayBase(day);
-      const isWorking = hasOverride 
+      const isWorking = dateStr in workingDaysOverrides
         ? workingDaysOverrides[dateStr] === 'working'
-        : baseIsWorking;
-
-      const isPastDay = isBefore(day, startOfDay(new Date()));
+        : isWorkingDayBase(day);
+      const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+      const isCurToday = isToday(day);
+      const isPast = isBefore(day, today);
 
       return (
         <div
           key={day.toString()}
-          className={`calendar-day admin-day-wrapper ${isSelected ? 'selected-day' : ''} ${isWorking ? 'work-day' : ''} ${isCurrentToday ? 'today' : ''} ${isPastDay ? 'past-day' : ''}`}
+          className={[
+            'cal-day',
+            isWorking ? 'cal-day--working' : 'cal-day--off',
+            isSelected ? 'cal-day--selected' : '',
+            isCurToday ? 'cal-day--today' : '',
+            isPast ? 'cal-day--past' : '',
+          ].filter(Boolean).join(' ')}
         >
-          <motion.button
-            onClick={() => {
-              if (isWorking && window.innerWidth > 768) {
-                setSelectedDate(day);
-              }
-            }}
-            onTouchStart={(e) => handleTouchStart(e, day)}
-            onTouchEnd={(e) => handleTouchEnd(e, day)}
-            onTouchCancel={handleTouchCancel}
-            className={`admin-calendar-day-btn ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${isPastDay ? 'past-day' : ''}`}
-            whileHover={isWorking && window.innerWidth > 768 ? { scale: 1.05 } : {}}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="calendar-day__number">{format(day, 'd')}</span>
-          </motion.button>
-          {isCurrentToday && <div className="calendar-day__today-marker" />}
-          <motion.button
-            className="admin-calendar-day__toggle-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleToggleDayStatus(day);
-            }}
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            title={isWorking ? 'Сделать выходным' : 'Сделать рабочим'}
+          <button
+            className="cal-day__sel"
+            onClick={() => !isPast && handleDaySelect(day)}
             type="button"
+            disabled={!isWorking || isPast}
+            aria-label={`${format(day, 'd MMMM', { locale: ru })}${isWorking ? ', рабочий' : ', выходной'}`}
+          >
+            <span className="cal-day__num">{format(day, 'd')}</span>
+            {isCurToday && <span className="cal-day__today-dot" aria-hidden="true" />}
+          </button>
+          <button
+            className="cal-day__toggle"
+            onClick={(e) => !isPast && handleToggleDayStatus(day, e)}
+            onTouchEnd={(e) => !isPast && handleToggleDayStatus(day, e)}
+            type="button"
+            aria-label={isWorking ? 'Пометить выходным' : 'Пометить рабочим'}
+            title={isWorking ? 'Сделать выходным' : 'Сделать рабочим'}
+            disabled={isPast}
           >
             {isWorking ? '✓' : '✕'}
-          </motion.button>
+          </button>
         </div>
       );
     });
 
-    return [...emptyDays, ...days];
-  }, [currentMonth, workingDaysOverrides, selectedDate, handleToggleDayStatus, handleTouchStart, handleTouchEnd, isLongPressing]);
+    return [...empties, ...cells];
+  }, [currentMonth, workingDaysOverrides, selectedDate, handleDaySelect, handleToggleDayStatus]);
 
+  // ── Duration label ────────────────────────────────────────────
+  const durationLabel = (() => {
+    const total = calculateTotalDuration(slotFormData.services.filter(Boolean));
+    if (!total) return '30 мин (по умолчанию)';
+    const h = Math.floor(total / 60), m = total % 60;
+    return h && m ? `${h} ч ${m} мин` : h ? `${h} ч` : `${m} мин`;
+  })();
+
+  // ════════════════════════════════════════════════════════════════
+  // LOGIN
+  // ════════════════════════════════════════════════════════════════
   if (!isAuthenticated) {
     return (
-      <div className="admin-login">
+      <div className="adm-login">
         <motion.div
-          className="admin-login__card"
-          initial={{ opacity: 0, y: 20 }}
+          className="adm-login__card"
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
         >
-          <h2>Админ-панель</h2>
+          <div className="adm-login__icon" aria-hidden="true">✦</div>
+          <h2>Управление записями</h2>
           <form onSubmit={handleLogin} autoComplete="on">
-            <div className="admin-login__field">
-              <label>Логин</label>
+            <div className="adm-field">
+              <label htmlFor="adm-u">Логин</label>
               <input
-                type="text"
-                name="username"
-                autoComplete="username"
-                value={login}
-                onChange={(e) => setLogin(e.target.value)}
-                required
-                autoFocus
+                id="adm-u" type="text" name="username" autoComplete="username"
+                value={login} onChange={e => setLogin(e.target.value)}
+                required autoFocus placeholder="Введите логин"
               />
             </div>
-            <div className="admin-login__field">
-              <label>Пароль</label>
+            <div className="adm-field">
+              <label htmlFor="adm-p">Пароль</label>
               <input
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                id="adm-p" type="password" name="password" autoComplete="current-password"
+                value={password} onChange={e => setPassword(e.target.value)}
+                required placeholder="Введите пароль"
               />
             </div>
-            {error && <div className="admin-login__error">{error}</div>}
-            <motion.button
-              type="submit"
-              className="btn btn-primary"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
+            {loginError && <div className="adm-login__error" role="alert">{loginError}</div>}
+            <button type="submit" className="adm-btn adm-btn--primary adm-btn--full">
               Войти
-            </motion.button>
+            </button>
           </form>
         </motion.div>
       </div>
     );
   }
 
+  // ════════════════════════════════════════════════════════════════
+  // MAIN PANEL
+  // ════════════════════════════════════════════════════════════════
   return (
-    <div className="admin-panel">
-      <div className="admin-header">
-        <h1 className="gradient-text">Админ-панель управления записями</h1>
-        <motion.button
-          onClick={handleLogout}
-          className="btn btn-secondary"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          Выйти
-        </motion.button>
-      </div>
+    <div className="adm">
+      {/* ── STICKY HEADER ────────────────────────────────────── */}
+      <header className="adm-header">
+        <div className="adm-header__left">
+          <span className="adm-header__icon" aria-hidden="true">✦</span>
+          <span className="adm-header__title">Расписание</span>
+        </div>
+        <button className="adm-btn adm-btn--ghost adm-btn--sm" onClick={handleLogout} type="button">
+          <span aria-hidden="true">⏻</span>
+          <span className="adm-btn__label">Выйти</span>
+        </button>
+      </header>
 
-      <div className="admin-content">
-        <div className="admin-calendar-section">
-          <div className="calendar-header">
+      {/* ── MAIN CONTENT ─────────────────────────────────────── */}
+      <main className="adm-main">
+
+        {/* Calendar */}
+        <section className="adm-cal" aria-label="Календарь">
+          <div className="adm-cal__nav">
             <motion.button
+              className="adm-cal__nav-btn"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="calendar-header__nav-btn"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              ‹
-            </motion.button>
-            <h3 className="calendar-header__title">{format(currentMonth, 'LLLL yyyy', { locale: ru })}</h3>
+              whileTap={{ scale: 0.88 }} type="button" aria-label="Предыдущий месяц"
+            >‹</motion.button>
+            <h2 className="adm-cal__month">
+              {format(currentMonth, 'LLLL yyyy', { locale: ru })}
+            </h2>
             <motion.button
+              className="adm-cal__nav-btn"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="calendar-header__nav-btn"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              ›
-            </motion.button>
+              whileTap={{ scale: 0.88 }} type="button" aria-label="Следующий месяц"
+            >›</motion.button>
           </div>
 
-          <div className="calendar-weekdays">
-            {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
-              <div key={day} className="calendar-weekdays__day">{day}</div>
+          <div className="adm-cal__weekdays" aria-hidden="true">
+            {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
+              <div key={d} className="adm-cal__wd">{d}</div>
             ))}
           </div>
 
-          <div className="calendar-grid">
+          <div className="adm-cal__grid" role="grid" aria-label="Дни месяца">
             {calendarDays}
           </div>
-        </div>
 
-        {selectedDate && (
-          <motion.div
-            className="admin-slots-section"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <div className="admin-slots-header">
-              <div>
-                <h3>Слоты на {format(selectedDate, 'd MMMM yyyy', { locale: ru })}</h3>
-              </div>
-              {bookedSlots.length > 0 && (
-                <motion.button
-                  onClick={handleClearAllSlots}
-                  className="btn btn-danger btn-sm"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  disabled={loading}
-                >
-                  Очистить все
-                </motion.button>
-              )}
-            </div>
+          <div className="adm-cal__legend" aria-hidden="true">
+            <span className="adm-cal__legend-item adm-cal__legend-item--working">✓ рабочий</span>
+            <span className="adm-cal__legend-item adm-cal__legend-item--off">✕ выходной</span>
+            <span className="adm-cal__legend-tip">✓/✕ — смена статуса дня</span>
+          </div>
+        </section>
 
-            {loading ? (
-              <div className="admin-loading">Загрузка...</div>
-            ) : (
-              <div className="admin-slots-grid">
-                {timeSlots.map((time) => {
-                  const isBooked = bookedSlots.includes(time);
-                  const slotInfo = bookedSlotsInfo[time];
-                  const tooltipText = slotInfo 
-                    ? `${slotInfo.name || 'Клиент'}${slotInfo.service ? ` - ${slotInfo.service}` : ''}`
-                    : '';
-                  
-                  return (
-                    <motion.div
-                      key={time}
-                      className="admin-slot-wrapper"
+        {/* Slots panel */}
+        <AnimatePresence>
+          {selectedDate ? (
+            <motion.section
+              ref={slotsPanelRef}
+              className="adm-slots"
+              key="slots-panel"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.25 }}
+              aria-label={`Слоты на ${format(selectedDate, 'd MMMM', { locale: ru })}`}
+            >
+              <div className="adm-slots__header">
+                <div className="adm-slots__date">
+                  <span className="adm-slots__date-day">{format(selectedDate, 'd')}</span>
+                  <span className="adm-slots__date-rest">
+                    {format(selectedDate, 'MMMM yyyy', { locale: ru })}
+                    {bookedSlots.length > 0 && (
+                      <span className="adm-slots__badge">{bookedSlots.length} занято</span>
+                    )}
+                  </span>
+                </div>
+                <div className="adm-slots__actions">
+                  {bookedSlots.length > 0 && (
+                    <button
+                      className="adm-btn adm-btn--danger adm-btn--sm"
+                      onClick={handleClearAllSlots}
+                      disabled={loading} type="button"
                     >
+                      Очистить всё
+                    </button>
+                  )}
+                  <button
+                    className="adm-btn adm-btn--ghost adm-btn--icon"
+                    onClick={() => { setSelectedDate(null); setBookedSlots([]); }}
+                    type="button" aria-label="Закрыть панель"
+                  >✕</button>
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="adm-slots__loading">
+                  <div className="adm-spinner" aria-label="Загрузка" />
+                  <span>Загрузка...</span>
+                </div>
+              ) : (
+                <div className="adm-slots__grid">
+                  {timeSlots.map(time => {
+                    const isBooked = bookedSlots.includes(time);
+                    const info = bookedSlotsInfo[time];
+                    return (
                       <motion.button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log('Клик по слоту:', time);
-                          handleToggleSlot(time);
-                        }}
-                        className={`admin-slot ${isBooked ? 'booked' : 'free'}`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.98 }}
+                        key={time}
+                        className={`adm-slot ${isBooked ? 'adm-slot--booked' : 'adm-slot--free'}`}
+                        onClick={() => handleToggleSlot(time)}
+                        whileTap={{ scale: 0.95 }}
                         disabled={loading}
-                        title={isBooked && tooltipText ? tooltipText : (isBooked ? 'Закрыт' : 'Свободен')}
                         type="button"
+                        title={isBooked && info
+                          ? `${info.name || 'Клиент'}${info.service ? ` — ${info.service}` : ''}`
+                          : (isBooked ? 'Занято' : 'Свободно — нажмите для закрытия')}
                       >
-                        <span className="admin-slot-time">{time}</span>
-                        <span className="admin-slot-status">
-                          {isBooked ? '✕ Закрыт' : '✓ Свободен'}
-                        </span>
-                        {isBooked && slotInfo && (
-                          <span className="admin-slot-info">
-                            {slotInfo.name && <span className="admin-slot-name">{slotInfo.name}</span>}
-                            {slotInfo.service && <span className="admin-slot-service">{slotInfo.service}</span>}
+                        <span className="adm-slot__time">{time}</span>
+                        <span className="adm-slot__indicator" aria-hidden="true" />
+                        {isBooked && info && (
+                          <span className="adm-slot__info">
+                            {info.name && <span className="adm-slot__name">{info.name}</span>}
+                            {info.service && <span className="adm-slot__svc">{info.service}</span>}
                           </span>
                         )}
                       </motion.button>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </motion.section>
+          ) : (
+            <motion.div
+              className="adm-empty"
+              key="empty-state"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <span className="adm-empty__icon" aria-hidden="true">📅</span>
+              <p>Выберите рабочий день для управления слотами</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            {showSlotForm && (
-              <motion.div
-                className="admin-slot-form-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={() => setShowSlotForm(false)}
-              >
-                <motion.div
-                  className="admin-slot-form"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <h3>Закрыть слот {slotFormData.time}</h3>
-                  <div className="admin-slot-form__field">
-                    <label>Имя клиента (необязательно)</label>
-                    <input
-                      type="text"
-                      value={slotFormData.name}
-                      onChange={(e) => setSlotFormData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Введите имя"
-                    />
-                  </div>
-                  <div className="admin-slot-form__field">
-                    <label>Услуги (можно несколько)</label>
-                    <div className="admin-slot-form__services">
-                      {(slotFormData.services.length ? slotFormData.services : ['']).map((service, idx) => {
-                        const manicureService = pricelistData.manicure.find(s => s.name === service);
-                        const pedicureService = pricelistData.pedicure.find(s => s.name === service);
-                        const durationLabel = manicureService?.duration || pedicureService?.duration || '';
-                        return (
-                          <div key={idx} className="admin-slot-form__service-row">
-                    <select
-                              value={service}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setSlotFormData(prev => {
-                                  const next = [...(prev.services.length ? prev.services : [''])];
-                                  next[idx] = value;
-                                  return { ...prev, services: next };
-                                });
-                              }}
-                      className="admin-slot-form__select"
-                    >
-                              <option value="">Выберите услугу</option>
-                              {allServices.map((s, i) => (
-                                <option key={i} value={s}>{s}</option>
-                      ))}
-                    </select>
-                            {durationLabel && <span className="admin-slot-form__duration">{durationLabel}</span>}
-                            { (slotFormData.services.length ? slotFormData.services : ['']).length > 1 && (
-                              <button
-                                type="button"
-                                className="admin-slot-form__remove"
-                                onClick={() => {
-                                  setSlotFormData(prev => {
-                                    const next = [...(prev.services.length ? prev.services : [''])];
-                                    next.splice(idx, 1);
-                                    return { ...prev, services: next };
-                                  });
-                                }}
-                              >
-                                ✕
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-secondary admin-slot-form__add"
-                      onClick={() => setSlotFormData(prev => ({ ...prev, services: [...prev.services, ''] }))}
-                    >
-                      Добавить услугу
-                    </button>
-                  </div>
-                  <div className="admin-slot-form__field">
-                    <label>Комментарий / дополнительная услуга (опционально)</label>
-                    <input
-                      type="text"
-                      value={slotFormData.note}
-                      onChange={(e) => setSlotFormData(prev => ({ ...prev, note: e.target.value }))}
-                      placeholder="Например: коррекция, дизайн и т.п."
-                    />
-                  </div>
-                  <div className="admin-slot-form__summary">
-                    <span>Итого длительность: </span>
-                    <strong>
-                      {(() => {
-                        const selected = slotFormData.services.filter(Boolean);
-                        const total = calculateTotalDuration(selected);
-                        const hours = Math.floor(total / 60);
-                        const mins = total % 60;
-                        if (total === 0) return '30 мин. (по умолчанию)';
-                        if (hours === 0) return `${mins} мин.`;
-                        if (mins === 0) return `${hours} ч.`;
-                        return `${hours} ч. ${mins} мин.`;
-                      })()}
-                    </strong>
-                  </div>
-                  <div className="admin-slot-form__buttons">
-                    <motion.button
-                      onClick={handleCloseSlot}
-                      className="btn btn-primary"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.98 }}
-                      disabled={loading}
-                    >
-                      Закрыть слот
-                    </motion.button>
-                    <motion.button
-                      onClick={() => {
-                        setShowSlotForm(false);
-                        setSlotFormData({ time: '', name: '', services: [], note: '' });
-                      }}
-                      className="btn btn-secondary"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Отмена
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
+      </main>
+
+      {/* ── SLOT FORM MODAL (bottom-sheet on mobile) ─────────── */}
+      <AnimatePresence>
+        {showSlotForm && (
+          <motion.div
+            className="adm-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSlotForm(false)}
+            aria-modal="true"
+            role="dialog"
+            aria-label={`Закрыть слот ${slotFormData.time}`}
+          >
+            <motion.div
+              className="adm-form"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 340 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="adm-form__drag-hint" aria-hidden="true" />
+
+              <div className="adm-form__header">
+                <h3>Слот <strong>{slotFormData.time}</strong></h3>
+                <button
+                  className="adm-btn adm-btn--ghost adm-btn--icon"
+                  onClick={() => setShowSlotForm(false)}
+                  type="button" aria-label="Закрыть"
+                >✕</button>
+              </div>
+
+              <div className="adm-field">
+                <label htmlFor="slot-name">Имя клиента</label>
+                <input
+                  id="slot-name" type="text"
+                  value={slotFormData.name}
+                  onChange={e => setSlotFormData(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Необязательно" autoComplete="off"
+                />
+              </div>
+
+              <div className="adm-field">
+                <label>Услуги</label>
+                <div className="adm-svcs">
+                  {(slotFormData.services.length ? slotFormData.services : ['']).map((svc, i) => {
+                    const found = pricelistData.manicure.find(s => s.name === svc)
+                      ?? pricelistData.pedicure.find(s => s.name === svc);
+                    const dur = found?.duration ?? '';
+                    const rows = slotFormData.services.length ? slotFormData.services : [''];
+                    return (
+                      <div key={i} className="adm-svcs__row">
+                        <select
+                          value={svc}
+                          onChange={e => setSlotFormData(p => {
+                            const next = [...(p.services.length ? p.services : [''])];
+                            next[i] = e.target.value;
+                            return { ...p, services: next };
+                          })}
+                          aria-label={`Услуга ${i + 1}`}
+                        >
+                          <option value="">Выберите услугу</option>
+                          {allServices.map((s, j) => <option key={j} value={s}>{s}</option>)}
+                        </select>
+                        {dur && <span className="adm-svcs__dur">{dur}</span>}
+                        {rows.length > 1 && (
+                          <button
+                            type="button" className="adm-svcs__del"
+                            aria-label="Удалить услугу"
+                            onClick={() => setSlotFormData(p => {
+                              const next = [...(p.services.length ? p.services : [''])];
+                              next.splice(i, 1);
+                              return { ...p, services: next };
+                            })}
+                          >✕</button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--ghost adm-btn--sm adm-btn--full"
+                  onClick={() => setSlotFormData(p => ({ ...p, services: [...p.services, ''] }))}
+                >+ Добавить услугу</button>
+              </div>
+
+              <div className="adm-field">
+                <label htmlFor="slot-note">Комментарий</label>
+                <input
+                  id="slot-note" type="text"
+                  value={slotFormData.note}
+                  onChange={e => setSlotFormData(p => ({ ...p, note: e.target.value }))}
+                  placeholder="Дополнительно..." autoComplete="off"
+                />
+              </div>
+
+              <div className="adm-form__summary">
+                <span>Длительность</span>
+                <strong>{durationLabel}</strong>
+              </div>
+
+              <div className="adm-form__btns">
+                <button
+                  className="adm-btn adm-btn--primary adm-btn--full"
+                  onClick={handleCloseSlot}
+                  disabled={loading} type="button"
+                >Закрыть слот</button>
+                <button
+                  className="adm-btn adm-btn--ghost adm-btn--full"
+                  onClick={() => { setShowSlotForm(false); setSlotFormData({ time: '', name: '', services: [], note: '' }); }}
+                  type="button"
+                >Отмена</button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
-
-        {!selectedDate && (
-          <div className="admin-hint">
-            <p>Выберите рабочий день в календаре для управления слотами</p>
-            <p className="admin-hint__tip">
-              💡 <strong>Совет:</strong> На десктопе - клик по иконке ✓/✕ для переключения статуса. На мобильных - зажмите день на 0.6 секунды для переключения статуса.
-            </p>
-          </div>
-        )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };
 
 export default Admin;
-
