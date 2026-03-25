@@ -67,6 +67,14 @@ const DayToggleButton: React.FC<{
     if (isPast) return;
     e.preventDefault();
     e.stopPropagation();
+
+    // Desktop (mouse): instant toggle, no animation
+    if (e.pointerType === 'mouse') {
+      onToggle();
+      return;
+    }
+
+    // Touch (mobile): require 2-second hold
     setPressing(true);
     timerRef.current = setTimeout(() => {
       setPressing(false);
