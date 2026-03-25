@@ -494,9 +494,15 @@
   border: 1px solid var(--border-gold-strong);
   border-radius: var(--r-2xl);
   padding: 3rem;
-  max-width: 600px;   // было 400px — расширили
+  max-width: 600px;
   width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: var(--shadow-lg), var(--shadow-glow);
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
 
   h3 {
     margin: 0 0 1.5rem 0;
