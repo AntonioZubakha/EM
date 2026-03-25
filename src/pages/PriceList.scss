@@ -91,18 +91,19 @@
   
   &__header {
     font-family: var(--font-sans);
-    font-size: 0.7rem;
+    font-size: 11px;
     font-weight: 400;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--text-muted);
-    padding: 1.2rem 1.5rem;
+    padding: 14px 10px;
     text-align: left;
     border-bottom: 1px solid var(--border-gold);
     background: rgba(201, 169, 110, 0.04);
 
-    &--price { text-align: right; width: 1%; white-space: nowrap; }
-    &--action { text-align: right; width: 1%; white-space: nowrap; }
+    &--service  { padding-left: 20px; }
+    &--price    { text-align: right; width: 1%; white-space: nowrap; }
+    &--action   { text-align: right; width: 1%; white-space: nowrap; padding-right: 20px; }
     &--duration { text-align: center; width: 1%; white-space: nowrap; }
   }
 
@@ -118,18 +119,18 @@
   }
 
   &__cell {
-    padding: 1.25rem 0.5rem; // Минимальные боковые падинги для экономии места
+    padding: 18px 10px;
     font-family: var(--font-sans);
-    font-size: 0.92rem;
+    font-size: 14px;
     font-weight: 300;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
     vertical-align: middle;
 
     &--service {
-      width: 28%;
-      min-width: 160px;
-      padding-left: 1.2rem; // Отступ от левого края карточки
+      width: 26%;
+      min-width: 140px;
+      padding-left: 20px;
       strong {
         font-weight: 500;
         color: var(--text-primary);
@@ -139,9 +140,8 @@
 
     &--description {
       width: auto;
-      min-width: 180px;
       color: var(--text-muted);
-      font-size: 0.85rem;
+      font-size: 13px;
       line-height: 1.5;
     }
 
@@ -150,21 +150,21 @@
       white-space: nowrap;
       text-align: center;
       color: var(--text-muted);
-      font-size: 0.85rem;
-      padding-left: 0.75rem;
-      padding-right: 0.75rem;
+      font-size: 13px;
+      padding-left: 12px;
+      padding-right: 12px;
     }
 
     &--price {
       width: 1%;
       white-space: nowrap;
       text-align: right;
-      padding-left: 0.75rem;
-      padding-right: 0.75rem;
+      padding-left: 12px;
+      padding-right: 12px;
 
       strong {
         font-family: var(--font-serif);
-        font-size: 1.1rem;
+        font-size: 17px;
         font-weight: 400;
         color: var(--gold);
         letter-spacing: 0.03em;
@@ -175,14 +175,15 @@
       width: 1%;
       white-space: nowrap;
       text-align: right;
-      padding-left: 0.75rem;
-      padding-right: 1.2rem; // Отступ от правого края карточки
+      padding-left: 8px;
+      padding-right: 20px;
 
       .btn-sm {
-        padding-left: 0.8rem;
-        padding-right: 0.8rem;
-        font-size: 0.72rem; // Чуть меньше шрифт специально для кнопки в таблице
-        min-width: 140px; 
+        padding: 7px 16px;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        min-width: 0;
+        white-space: nowrap;
         justify-content: center;
       }
     }
