@@ -52,6 +52,52 @@ const getNextTimeSlots = (start: string, mins: number): string[] => {
 
 interface BookedSlotData { date: string; time: string; name?: string; service?: string }
 
+// ── Long-press toggle button (2 seconds) ─────────────────────────────────────
+const LONG_PRESS_MS = 2000;
+
+const DayToggleButton: React.FC<{
+  isWorking: boolean;
+  isPast: boolean;
+  onToggle: () => void;
+}> = ({ isWorking, isPast, onToggle }) => {
+  const [pressing, setPressing] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const start = (e: React.PointerEvent) => {
+    if (isPast) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setPressing(true);
+    timerRef.current = setTimeout(() => {
+      setPressing(false);
+      onToggle();
+    }, LONG_PRESS_MS);
+  };
+
+  const cancel = () => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    setPressing(false);
+  };
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  return (
+    <button
+      className={`cal-day__toggle${pressing ? ' cal-day__toggle--pressing' : ''}`}
+      onPointerDown={start}
+      onPointerUp={cancel}
+      onPointerLeave={cancel}
+      onPointerCancel={cancel}
+      type="button"
+      disabled={isPast}
+      aria-label={isWorking ? 'Удерживайте 2 сек. для отметки выходным' : 'Удерживайте 2 сек. для отметки рабочим'}
+      title={isWorking ? 'Удержать 2 сек. → сделать выходным' : 'Удержать 2 сек. → сделать рабочим'}
+    >
+      {isWorking ? '✓' : '✕'}
+    </button>
+  );
+};
+
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [login, setLogin] = useState('');
@@ -174,9 +220,7 @@ const Admin: React.FC = () => {
     if (isWorking) setSelectedDate(day);
   }, [workingDaysOverrides]);
 
-  const handleToggleDayStatus = useCallback(async (day: Date, e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleToggleDayStatus = useCallback(async (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
     const isWorking = dateStr in workingDaysOverrides
       ? workingDaysOverrides[dateStr] === 'working'
@@ -312,17 +356,11 @@ const Admin: React.FC = () => {
             <span className="cal-day__num">{format(day, 'd')}</span>
             {isCurToday && <span className="cal-day__today-dot" aria-hidden="true" />}
           </button>
-          <button
-            className="cal-day__toggle"
-            onClick={(e) => !isPast && handleToggleDayStatus(day, e)}
-            onTouchEnd={(e) => !isPast && handleToggleDayStatus(day, e)}
-            type="button"
-            aria-label={isWorking ? 'Пометить выходным' : 'Пометить рабочим'}
-            title={isWorking ? 'Сделать выходным' : 'Сделать рабочим'}
-            disabled={isPast}
-          >
-            {isWorking ? '✓' : '✕'}
-          </button>
+          <DayToggleButton
+            isWorking={isWorking}
+            isPast={isPast}
+            onToggle={() => handleToggleDayStatus(day)}
+          />
         </div>
       );
     });

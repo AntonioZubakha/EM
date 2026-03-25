@@ -533,8 +533,10 @@
     background: var(--gold);
   }
 
-  // ── Toggle working/off strip ──
+  // ── Toggle working/off strip (long-press 2s) ──
   &__toggle {
+    position: relative;
+    overflow: hidden;
     height: 22px;
     width: 100%;
     background: rgba(255, 255, 255, 0.025);
@@ -547,22 +549,42 @@
     font-size: 9px;
     font-weight: 700;
     color: var(--text-muted);
-    transition: all var(--t-fast);
+    transition: color var(--t-fast), background var(--t-fast);
     flex-shrink: 0;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+    touch-action: none; // prevent scroll while holding
+
+    // Progress fill (sweeps left → right during long press)
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(212, 180, 131, 0.35);
+      transform: scaleX(0);
+      transform-origin: left center;
+      pointer-events: none;
+    }
+
+    &--pressing::after {
+      animation: toggle-press-fill 2s linear forwards;
+    }
 
     .cal-day--working & {
       color: #6ee7b7;
       background: rgba(110, 231, 183, 0.05);
+
+      &::after { background: rgba(248, 113, 113, 0.3); }
     }
 
     .cal-day--off & {
       color: var(--rose-muted);
+
+      &::after { background: rgba(110, 231, 183, 0.3); }
     }
 
     &:hover:not(:disabled) {
-      background: rgba(212, 180, 131, 0.14);
+      background: rgba(212, 180, 131, 0.1);
       color: var(--gold);
     }
 
@@ -573,6 +595,11 @@
       font-size: 10px;
     }
   }
+}
+
+@keyframes toggle-press-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
 // ════════════════════════════════════════════════════════════════
