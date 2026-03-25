@@ -91,12 +91,13 @@
   
   &__header {
     font-family: var(--font-sans);
-    font-size: 11px;
+    font-size: 0.68rem;
     font-weight: 400;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--text-muted);
-    padding: 14px 10px;
+    // vertical padding in rem (крупно), horizontal — px (не раздувает колонки)
+    padding: 1rem 6px;
     text-align: left;
     border-bottom: 1px solid var(--border-gold);
     background: rgba(201, 169, 110, 0.04);
@@ -119,9 +120,10 @@
   }
 
   &__cell {
-    padding: 18px 10px;
+    // vertical padding — rem (крупно), horizontal — px (не раздувает таблицу)
+    padding: 1.1rem 6px;
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 0.88rem;
     font-weight: 300;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
@@ -129,7 +131,7 @@
 
     &--service {
       width: 26%;
-      min-width: 140px;
+      min-width: 120px;
       padding-left: 20px;
       strong {
         font-weight: 500;
@@ -141,7 +143,7 @@
     &--description {
       width: auto;
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 0.82rem;
       line-height: 1.5;
     }
 
@@ -150,21 +152,21 @@
       white-space: nowrap;
       text-align: center;
       color: var(--text-muted);
-      font-size: 13px;
-      padding-left: 12px;
-      padding-right: 12px;
+      font-size: 0.82rem;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     &--price {
       width: 1%;
       white-space: nowrap;
       text-align: right;
-      padding-left: 12px;
-      padding-right: 12px;
+      padding-left: 10px;
+      padding-right: 10px;
 
       strong {
         font-family: var(--font-serif);
-        font-size: 17px;
+        font-size: 1.05rem;
         font-weight: 400;
         color: var(--gold);
         letter-spacing: 0.03em;
@@ -178,9 +180,10 @@
       padding-left: 8px;
       padding-right: 20px;
 
+      // Кнопка: шрифт в rem (крупный), паддинги — px (не раздувают колонку)
       .btn-sm {
-        padding: 7px 16px;
-        font-size: 11px;
+        padding: 9px 18px;
+        font-size: 0.68rem;
         letter-spacing: 0.1em;
         min-width: 0;
         white-space: nowrap;
