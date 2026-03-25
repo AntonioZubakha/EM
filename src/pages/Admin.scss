@@ -246,6 +246,13 @@
     }
   }
 
+  &.past-day {
+    opacity: 0.4;
+    .admin-calendar-day-btn:hover {
+      background: transparent;
+    }
+  }
+
   /* Админ-специфичные элементы */
   .admin-calendar-day-btn {
     width: 100%;

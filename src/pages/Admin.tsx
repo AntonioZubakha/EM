@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay, isBefore, startOfDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { getBookedSlotsForDate, releaseSlot } from '../utils/bookingSlots';
 import { isWorkingDayBase, setDayStatus, loadWorkingDaysOverrides } from '../utils/workingDays';
@@ -291,9 +291,13 @@ const Admin: React.FC = () => {
       const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       const selectedServices = slotFormData.services.filter(Boolean);
-      const servicesText = selectedServices.length
-        ? selectedServices.join(', ')
-        : slotFormData.note || 'Закрыто администратором';
+      let servicesText = selectedServices.join(', ');
+      if (slotFormData.note) {
+        servicesText = servicesText ? `${servicesText} (${slotFormData.note})` : slotFormData.note;
+      }
+      if (!servicesText) {
+        servicesText = 'Закрыто администратором';
+      }
       const totalDuration = calculateTotalDuration(selectedServices);
       const durationMinutes = totalDuration > 0 ? totalDuration : 30;
       const slotsToBook = getNextTimeSlots(slotFormData.time, durationMinutes);
@@ -479,10 +483,12 @@ const Admin: React.FC = () => {
         ? workingDaysOverrides[dateStr] === 'working'
         : baseIsWorking;
 
+      const isPastDay = isBefore(day, startOfDay(new Date()));
+
       return (
         <div
           key={day.toString()}
-          className={`calendar-day admin-day-wrapper ${isSelected ? 'selected-day' : ''} ${isWorking ? 'work-day' : ''} ${isCurrentToday ? 'today' : ''}`}
+          className={`calendar-day admin-day-wrapper ${isSelected ? 'selected-day' : ''} ${isWorking ? 'work-day' : ''} ${isCurrentToday ? 'today' : ''} ${isPastDay ? 'past-day' : ''}`}
         >
           <motion.button
             onClick={() => {
@@ -493,7 +499,7 @@ const Admin: React.FC = () => {
             onTouchStart={(e) => handleTouchStart(e, day)}
             onTouchEnd={(e) => handleTouchEnd(e, day)}
             onTouchCancel={handleTouchCancel}
-            className={`admin-calendar-day-btn ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'}`}
+            className={`admin-calendar-day-btn ${isSelected ? 'selected' : ''} ${isCurrentToday ? 'today' : ''} ${isWorking ? 'working' : 'off'} ${isPastDay ? 'past-day' : ''}`}
             whileHover={isWorking && window.innerWidth > 768 ? { scale: 1.05 } : {}}
             whileTap={{ scale: 0.95 }}
           >
