@@ -297,6 +297,10 @@
       color: var(--noir);
       border-color: var(--gold);
     }
+
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 
   &.work-day .admin-calendar-day__toggle-btn {
