@@ -164,10 +164,41 @@ CREATE INDEX idx_booked_slots_date_time ON booked_slots(date, time);
 - `http://localhost:5173` (Vite dev)
 - `http://localhost:3050` (Vite dev)
 
+### 💓 Keep-Alive для Supabase (защита от «засыпания»)
+
+Бесплатный тариф Supabase ставит проект на **паузу после ~7 дней неактивности**
+(никаких API/SQL-запросов). Чтобы такого не случалось, в репозитории
+настроен автоматический пинг.
+
+**Что работает «из коробки»:**
+
+1. **GitHub Actions cron** — `.github/workflows/keepalive.yml`
+   запускается каждый день и делает лёгкий запрос к Supabase REST API
+   (`SELECT id FROM booked_slots LIMIT 1`). Этого достаточно, чтобы
+   Supabase считал проект активным.
+2. **Self-ping в бэкенде** — пока процесс жив, каждые 24 часа он
+   сам делает то же самое (см. `server/index.js`, `setInterval`).
+3. **Эндпоинт `GET /api/keepalive`** — ручной/внешний пинг, который
+   реально ходит в БД и возвращает `{ ok: true, count, at }`.
+
+**Что нужно добавить один раз в GitHub Secrets**
+(Settings → Secrets and variables → Actions):
+
+| Secret | Обязательный | Значение |
+|---|---|---|
+| `SUPABASE_URL` | да | URL проекта, напр. `https://xxxx.supabase.co` |
+| `SUPABASE_KEY` | да | `service_role` или `anon` ключ (хватит anon) |
+| `KEEPALIVE_API_URL` | нет | полный URL `https://your-api/api/keepalive`, если хотите пинговать и бэкенд |
+
+После этого можно запустить workflow вручную:
+`Actions → Supabase Keep-Alive → Run workflow`, чтобы убедиться,
+что всё зелёное. Дальше он будет пинговать по расписанию сам.
+
 ### Проверка работоспособности
 
 После настройки проверьте:
 1. **Frontend:** https://elena-manicure.ru/
 2. **Backend Health:** `https://your-api-url/api/health` должен вернуть `{"status":"ok"}`
-3. **Бронирование:** Попробуйте забронировать слот на сайте
-4. **Админка:** Войдите в админ-панель и проверьте управление слотами
+3. **Backend Keep-Alive:** `https://your-api-url/api/keepalive` должен вернуть `{"status":"ok","ok":true,"count":N}`
+4. **Бронирование:** Попробуйте забронировать слот на сайте
+5. **Админка:** Войдите в админ-панель и проверьте управление слотами

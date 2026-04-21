@@ -1,0 +1,82 @@
+name: Supabase Keep-Alive
+
+# Бесплатный проект Supabase ставится на паузу после ~1 недели неактивности.
+# Этот workflow каждый день делает лёгкий запрос к БД,
+# чтобы проект считался активным и не засыпал.
+#
+# Необходимые GitHub Secrets (Settings → Secrets and variables → Actions):
+#   - SUPABASE_URL           URL проекта (https://xxx.supabase.co)
+#   - SUPABASE_KEY           service_role или anon ключ
+# Опционально:
+#   - KEEPALIVE_API_URL      полный URL до /api/keepalive вашего бэкенда
+#                            (если задан — будем пинговать и его)
+
+on:
+  schedule:
+    # Каждый день в 07:17 UTC (нестандартное время снижает риск задержек cron'а)
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::SUPABASE_URL или SUPABASE_KEY не заданы в GitHub Secrets"
+            exit 1
+          fi
+
+          URL="${SUPABASE_URL%/}/rest/v1/booked_slots?select=id&limit=1"
+          echo "Пингую: $URL"
+
+          HTTP_CODE=$(curl -s -o /tmp/body.txt -w "%{http_code}" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Accept: application/json" \
+            --max-time 30 \
+            --retry 3 --retry-delay 5 \
+            "$URL")
+
+          echo "HTTP $HTTP_CODE"
+          echo "--- response ---"
+          cat /tmp/body.txt || true
+          echo
+          echo "----------------"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Supabase отвечает, проект активен."
+          else
+            echo "::error::Supabase вернул код $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Ping backend /api/keepalive (optional)
+        env:
+          KEEPALIVE_API_URL: ${{ secrets.KEEPALIVE_API_URL }}
+        run: |
+          if [ -z "$KEEPALIVE_API_URL" ]; then
+            echo "KEEPALIVE_API_URL не задан — пропускаю пинг бэкенда."
+            exit 0
+          fi
+          echo "Пингую бэкенд: $KEEPALIVE_API_URL"
+          HTTP_CODE=$(curl -s -o /tmp/be.txt -w "%{http_code}" \
+            --max-time 60 \
+            --retry 3 --retry-delay 5 \
+            "$KEEPALIVE_API_URL")
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/be.txt || true
+          echo
+          # Не фейлим весь workflow, если бэкенд спит/выключен — главное Supabase
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Бэкенд отвечает."
+          else
+            echo "::warning::Бэкенд вернул код $HTTP_CODE (не критично)."
+          fi

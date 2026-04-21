@@ -168,6 +168,23 @@ async function deleteWorkingDay(date) {
   }
 }
 
+// Лёгкий пинг БД, чтобы не засыпала на бесплатном тарифе Supabase
+async function keepDatabaseAlive() {
+  if (!isSupabaseReady()) {
+    return { ok: false, reason: 'supabase_not_configured' };
+  }
+  try {
+    const { error, count } = await supabase
+      .from('booked_slots')
+      .select('id', { count: 'exact', head: true });
+    if (error) throw error;
+    return { ok: true, count: count ?? 0, at: new Date().toISOString() };
+  } catch (error) {
+    console.error('Ошибка keep-alive запроса к Supabase:', error);
+    return { ok: false, reason: 'query_failed', message: error.message };
+  }
+}
+
 function lockSlot(date, time) {
   const key = `${date}_${time}`;
   const now = Date.now();
@@ -200,6 +217,7 @@ module.exports = {
   deleteWorkingDay,
   lockSlot,
   unlockSlot,
-  cleanupExpiredLocks
+  cleanupExpiredLocks,
+  keepDatabaseAlive
 };
 

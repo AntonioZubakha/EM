@@ -12,7 +12,8 @@ const {
   deleteWorkingDay,
   lockSlot,
   unlockSlot,
-  cleanupExpiredLocks
+  cleanupExpiredLocks,
+  keepDatabaseAlive
 } = require('./dbStorage');
 
 const app = express();
@@ -374,6 +375,31 @@ app.delete('/api/working-days/:date', checkAdminToken, async (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Keep-alive: лёгкий запрос к БД, чтобы Supabase не уходил в паузу
+// Вызывается cron'ом из GitHub Actions (см. .github/workflows/keepalive.yml)
+app.get('/api/keepalive', async (req, res) => {
+  const result = await keepDatabaseAlive();
+  if (!result.ok) {
+    return res.status(503).json({ status: 'error', ...result });
+  }
+  res.json({ status: 'ok', ...result });
+});
+
+// Периодический self-ping БД (каждые 24 часа), если сервер живой.
+// Это доп. страховка поверх внешнего cron'а.
+const KEEPALIVE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+setInterval(() => {
+  keepDatabaseAlive()
+    .then(r => {
+      if (r.ok) {
+        console.log(`💓 Supabase keep-alive OK (rows: ${r.count})`);
+      } else {
+        console.warn('⚠️  Supabase keep-alive не удался:', r.reason);
+      }
+    })
+    .catch(err => console.error('Ошибка keep-alive:', err));
+}, KEEPALIVE_INTERVAL_MS);
 
 // Инициализация при запуске
 app.listen(PORT, () => {
