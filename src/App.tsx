@@ -8,16 +8,17 @@ import Portfolio from './pages/Portfolio';
 import Contacts from './pages/Contacts';
 import Booking from './pages/Booking';
 import Admin from './pages/Admin';
+import SeoFaq from './components/SeoFaq';
 import { trackPageView, trackNavigationClick } from './utils/analytics';
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { id: string; label: string; cta?: boolean }[] = [
   { id: 'about',     label: 'Обо мне'     },
-  { id: 'cabinet',   label: 'Мой кабинет' },
+  { id: 'cabinet',   label: 'Кабинет'     },
   { id: 'services',  label: 'Услуги'      },
-  { id: 'pricelist', label: 'Прейскурант' },
-  { id: 'portfolio', label: 'Мои работы'  },
+  { id: 'pricelist', label: 'Прайс'       },
+  { id: 'portfolio', label: 'Работы'      },
   { id: 'contacts',  label: 'Контакты'    },
-  { id: 'booking',   label: 'Записаться'  },
+  { id: 'booking',   label: 'Записаться', cta: true },
 ];
 
 function App() {
@@ -93,12 +94,7 @@ function App() {
       {/* ── HEADER ── */}
       <header className="header">
         <nav className="nav">
-          <motion.div
-            className="nav-container"
-            initial={{ y: -80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <div className="nav-container">
             {/* Logo */}
             <div className="logo" onClick={() => scrollToSection('about')} style={{ cursor: 'pointer' }}>
               <h2>Елена</h2>
@@ -107,20 +103,15 @@ function App() {
 
             {/* Desktop nav */}
             <ul className="nav-list">
-              {NAV_ITEMS.map((item, i) => (
-                <motion.li
-                  key={item.id}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.06, duration: 0.5 }}
-                >
+              {NAV_ITEMS.map((item) => (
+                <li key={item.id}>
                   <button
                     onClick={() => scrollToSection(item.id)}
-                    className={`nav-link ${activeSection === item.id ? 'active' : ''}`}
+                    className={`nav-link ${activeSection === item.id ? 'active' : ''}${item.cta ? ' nav-link--cta' : ''}`}
                   >
                     {item.label}
                   </button>
-                </motion.li>
+                </li>
               ))}
             </ul>
 
@@ -134,7 +125,7 @@ function App() {
               <span />
               <span />
             </button>
-          </motion.div>
+          </div>
         </nav>
       </header>
 
@@ -151,7 +142,7 @@ function App() {
             {NAV_ITEMS.map((item, i) => (
               <motion.button
                 key={item.id}
-                className={`nav-drawer__link ${activeSection === item.id ? 'active' : ''}`}
+                className={`nav-drawer__link ${activeSection === item.id ? 'active' : ''}${item.cta ? ' nav-drawer__link--cta' : ''}`}
                 onClick={() => scrollToSection(item.id)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -166,20 +157,24 @@ function App() {
 
       {/* ── MAIN ── */}
       <main className="main" role="main">
-        <section id="about"     className="section" aria-label="О мастере"><About /></section>
+        <section id="about" className="section section--hero" aria-label="О мастере"><About /></section>
         <section id="cabinet"   className="section" aria-label="Мой кабинет"><Cabinet /></section>
         <section id="services"  className="section" aria-label="Услуги"><Services /></section>
         <section id="pricelist" className="section" aria-label="Прейскурант"><PriceList /></section>
         <section id="portfolio" className="section" aria-label="Портфолио работ"><Portfolio /></section>
         <section id="contacts"  className="section" aria-label="Контакты"><Contacts /></section>
         <section id="booking"   className="section" aria-label="Записаться на процедуру"><Booking /></section>
+        <SeoFaq />
       </main>
 
       {/* ── FOOTER ── */}
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-logo">Елена</div>
-          <div className="footer-tagline">Мастер ногтевого сервиса</div>
+          <div className="footer-tagline">Мастер маникюра и педикюра в Железнодорожном</div>
+          <address className="footer-address" style={{ fontStyle: 'normal', marginBottom: '0.5rem' }}>
+            г. Балашиха, мкр. Железнодорожный, ул. Маяковского, 12
+          </address>
           <p>&copy; 2025 elena-manicure.ru. Все права защищены.</p>
         </div>
       </footer>

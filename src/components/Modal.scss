@@ -63,7 +63,7 @@
   line-height: 1;
 
   &:hover {
-    background: rgba(201, 169, 110, 0.10);
+    background: rgba(var(--gold-rgb), 0.10);
     border-color: var(--gold);
   }
 }

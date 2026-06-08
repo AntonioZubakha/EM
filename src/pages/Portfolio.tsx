@@ -19,11 +19,11 @@ const Portfolio: React.FC = () => {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const works = [
-    { img: withBase('5298658092193091210.jpg'), alt: 'Пример работы — маникюр' },
-    { img: withBase('5298658092193091224.jpg'), alt: 'Пример работы — маникюр' },
-    { img: withBase('5298658092193091250.jpg'), alt: 'Пример работы — маникюр' },
-    { img: withBase('5429213501576052045.jpg'), alt: 'Пример работы — маникюр' },
-    { img: withBase('5298658092193091227.jpg'), alt: 'Пример работы — педикюр' },
+    { img: withBase('5298658092193091210.jpg'), alt: 'Маникюр с покрытием Shellac — работа мастера Елены, Железнодорожный' },
+    { img: withBase('5298658092193091224.jpg'), alt: 'Гель-лак маникюр — портфолио мастера в Балашихе' },
+    { img: withBase('5298658092193091250.jpg'), alt: 'Дизайн ногтей — маникюр в Железнодорожном' },
+    { img: withBase('5429213501576052045.jpg'), alt: 'Маникюр CND Shellac — пример работы' },
+    { img: withBase('5298658092193091227.jpg'), alt: 'Педикюр — работа мастера Елены, Балашиха' },
   ];
 
   const handleImageError = (index: number) => {
@@ -42,7 +42,7 @@ const Portfolio: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-5"
       >
-        <h1 className="gradient-text">Мои работы</h1>
+        <h2 className="gradient-text">Мои работы</h2>
       </motion.div>
 
       <motion.div

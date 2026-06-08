@@ -467,7 +467,7 @@ const Booking: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-5"
       >
-        <h1 className="gradient-text">Записаться на процедуру</h1>
+        <h2 className="gradient-text">Записаться на процедуру</h2>
         <p className="booking-intro">Выберите удобную дату и время, заполните форму или свяжитесь со мной напрямую</p>
       </motion.div>
 

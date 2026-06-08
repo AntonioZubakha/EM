@@ -29,7 +29,7 @@ const Services: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-5"
       >
-        <h1 className="gradient-text">Услуги</h1>
+        <h2 className="gradient-text">Услуги</h2>
       </motion.div>
 
       {/* Вкладки */}

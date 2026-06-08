@@ -37,7 +37,7 @@
     }
 
     &:hover {
-      background: rgba(201, 169, 110, 0.15) !important;
+      background: rgba(var(--gold-rgb), 0.15) !important;
       border-color: var(--gold) !important;
       box-shadow: var(--shadow-gold) !important;
       transform: scale(1.05) !important;

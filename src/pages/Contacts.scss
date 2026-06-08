@@ -63,7 +63,7 @@
 
   &:hover {
     border-color: var(--border-gold);
-    background: rgba(201, 169, 110, 0.04);
+    background: rgba(var(--gold-rgb), 0.04);
   }
 }
 
@@ -112,22 +112,22 @@
   // Telegram — blue-tinted
   .btn:nth-child(1) {
     border-color: rgba(42, 171, 238, 0.5);
-    color: #52BFED;
+    color: #7EC8E8;
 
     &:hover {
       background: rgba(42, 171, 238, 0.10);
-      border-color: #52BFED;
+      border-color: #7EC8E8;
     }
   }
 
   // WhatsApp — green-tinted
   .btn:nth-child(2) {
     border-color: rgba(37, 211, 102, 0.4);
-    color: #4CD980;
+    color: #8ED9A0;
 
     &:hover {
       background: rgba(37, 211, 102, 0.08);
-      border-color: #4CD980;
+      border-color: #8ED9A0;
     }
   }
 
@@ -137,7 +137,7 @@
     color: var(--gold);
 
     &:hover {
-      background: rgba(201, 169, 110, 0.10);
+      background: rgba(var(--gold-rgb), 0.10);
       border-color: var(--gold);
     }
   }

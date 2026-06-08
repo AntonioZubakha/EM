@@ -38,7 +38,7 @@ const Cabinet: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-5"
       >
-        <h1 className="gradient-text">Мой кабинет</h1>
+        <h2 className="gradient-text">Мой кабинет</h2>
       </motion.div>
 
       <motion.div

@@ -29,8 +29,8 @@
 .pricelist-toggle__container {
   display: inline-flex;
   gap: 0;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-gold);
+  background: rgba(var(--sky-rgb), 0.06);
+  border: 1px solid rgba(var(--sage-rgb), 0.35);
   border-radius: var(--r-full);
   padding: 4px;
 }
@@ -60,9 +60,10 @@
   &:hover { color: var(--text-secondary); }
 
   &.active {
-    background: rgba(201, 169, 110, 0.14);
-    color: var(--gold);
-    box-shadow: 0 0 12px rgba(201, 169, 110, 0.10);
+    background: var(--grad-master);
+    color: var(--noir);
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(var(--gold-rgb), 0.2);
   }
 
   @media (max-width: 420px) {
@@ -78,29 +79,34 @@
   padding: 0 !important;
   overflow: hidden;
   border-radius: var(--r-lg) !important;
+  border: 1px solid rgba(var(--sage-rgb), 0.35) !important;
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(var(--sky-rgb), 0.08) !important;
 
   &--desktop {
     @media (max-width: 768px) { display: none; }
   }
 }
 
-// ── Desktop table ─────────────────────────────────
+// ── Desktop table — maestro palette ─────────────────
 .price-table {
   width: 100%;
   border-collapse: collapse;
-  
+
+  thead tr {
+    background: var(--grad-master);
+  }
+
   &__header {
     font-family: var(--font-sans);
-    font-size: 0.68rem;
-    font-weight: 400;
-    letter-spacing: 0.16em;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--text-muted);
-    // vertical padding in rem (крупно), horizontal — px (не раздувает колонки)
+    color: var(--noir);
     padding: 1rem 6px;
     text-align: left;
-    border-bottom: 1px solid var(--border-gold);
-    background: rgba(201, 169, 110, 0.04);
+    border: none;
+    white-space: nowrap;
 
     &--service  { padding-left: 20px; }
     &--price    { text-align: right; width: 1%; white-space: nowrap; }
@@ -109,18 +115,26 @@
   }
 
   &__row {
-    border-bottom: 1px solid var(--border-subtle);
-    transition: background var(--t-fast);
+    border-bottom: 1px solid rgba(var(--sage-rgb), 0.12);
+    transition: background var(--t-fast), box-shadow var(--t-fast);
 
     &:last-child { border-bottom: none; }
 
+    &:nth-child(even) {
+      background: rgba(var(--sage-rgb), 0.05);
+    }
+
+    &:nth-child(odd) {
+      background: rgba(var(--rose-rgb), 0.03);
+    }
+
     &:hover {
-      background: rgba(201, 169, 110, 0.04);
+      background: rgba(var(--sky-rgb), 0.10) !important;
+      box-shadow: inset 4px 0 0 var(--gold);
     }
   }
 
   &__cell {
-    // vertical padding — rem (крупно), horizontal — px (не раздувает таблицу)
     padding: 1.1rem 6px;
     font-family: var(--font-sans);
     font-size: 0.88rem;
@@ -135,7 +149,7 @@
       padding-left: 20px;
       strong {
         font-weight: 500;
-        color: var(--text-primary);
+        color: var(--cream);
         letter-spacing: 0.03em;
       }
     }
@@ -151,7 +165,7 @@
       width: 1%;
       white-space: nowrap;
       text-align: center;
-      color: var(--text-muted);
+      color: var(--sage-light);
       font-size: 0.82rem;
       padding-left: 10px;
       padding-right: 10px;
@@ -165,11 +179,16 @@
       padding-right: 10px;
 
       strong {
+        display: inline-block;
         font-family: var(--font-serif);
-        font-size: 1.05rem;
-        font-weight: 400;
-        color: var(--gold);
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--gold-light);
         letter-spacing: 0.03em;
+        padding: 0.3rem 0.85rem;
+        border-radius: var(--r-full);
+        background: rgba(var(--gold-rgb), 0.14);
+        border: 1px solid rgba(var(--gold-rgb), 0.28);
       }
     }
 
@@ -180,7 +199,6 @@
       padding-left: 8px;
       padding-right: 20px;
 
-      // Кнопка: шрифт в rem (крупный), паддинги — px (не раздувают колонку)
       .btn-sm {
         padding: 9px 18px;
         font-size: 0.68rem;
@@ -188,6 +206,14 @@
         min-width: 0;
         white-space: nowrap;
         justify-content: center;
+        border-color: rgba(var(--sage-rgb), 0.5);
+        color: var(--sage-light);
+
+        &:hover {
+          background: rgba(var(--sage-rgb), 0.2);
+          border-color: var(--sage);
+          color: var(--cream);
+        }
       }
     }
   }
@@ -204,6 +230,7 @@
 
 .price-card {
   padding: 1.5rem !important;
+  border-color: rgba(var(--sage-rgb), 0.3) !important;
 
   &__header {
     display: flex;
@@ -212,7 +239,7 @@
     gap: 1rem;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-gold);
+    border-bottom: 1px solid rgba(var(--sage-rgb), 0.25);
   }
 
   &__title {
@@ -227,10 +254,14 @@
   &__price {
     font-family: var(--font-serif);
     font-size: 1.2rem;
-    font-weight: 400;
-    color: var(--gold);
+    font-weight: 500;
+    color: var(--gold-light);
     white-space: nowrap;
     flex-shrink: 0;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--r-full);
+    background: rgba(var(--gold-rgb), 0.12);
+    border: 1px solid rgba(var(--gold-rgb), 0.25);
   }
 
   &__description {
@@ -262,6 +293,32 @@
 }
 
 // ── Info card (bottom) ────────────────────────────
+.pricelist-info {
+  max-width: 600px;
+  margin: 0 auto;
+  border: 1px solid rgba(var(--sky-rgb), 0.3) !important;
+  background: linear-gradient(145deg,
+    rgba(var(--sky-rgb), 0.08) 0%,
+    rgba(var(--sage-rgb), 0.06) 50%,
+    rgba(var(--gold-rgb), 0.05) 100%) !important;
+  box-shadow: var(--shadow-md), 0 0 30px rgba(var(--sky-rgb), 0.08) !important;
+
+  .card-title--light {
+    background: var(--grad-master) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    display: inline-block !important;
+  }
+
+  .info-list__item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(var(--sage-rgb), 0.12);
+
+    &:last-child { border-bottom: none; }
+  }
+}
+
 .info-title-icon {
   display: inline-flex;
   align-items: center;

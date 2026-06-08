@@ -22,10 +22,10 @@ const PriceList: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-5"
       >
-        <h1 className="gradient-text">Прейскурант</h1>
+        <h2 className="gradient-text">Прейскурант</h2>
         <div className="pricelist-intro">
           <p className="pricelist-intro__subtitle">
-            Прозрачные цены на все услуги. Стоимость включает консультацию и все необходимые материалы.
+            Прозрачные цены на маникюр и педикюр в Железнодорожном (Балашиха). Стоимость включает консультацию и все необходимые материалы.
           </p>
         </div>
       </motion.div>
@@ -174,7 +174,7 @@ const PriceList: React.FC = () => {
         viewport={{ once: true }}
         className="mt-5"
       >
-        <div className="card card--accent-gradient" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div className="card card--accent-gradient pricelist-info">
           <h3 className="card-title--light text-center">
             <span className="info-title-icon">
               <LightbulbIcon size={24} color="var(--primary-gold)" />

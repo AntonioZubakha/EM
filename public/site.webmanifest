@@ -1,7 +1,7 @@
 {
   "name": "Елена - Мастер ногтевого сервиса",
   "short_name": "Елена Маникюр",
-  "description": "Профессиональный маникюр и педикюр от мастера с 21-летним опытом",
+  "description": "Маникюр и педикюр в Железнодорожном, Балашиха. Мастер Елена, 21 год опыта.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -16,8 +16,8 @@
       "purpose": "any maskable"
     }
   ],
-  "theme_color": "#f8d7da",
-  "background_color": "#ffffff",
+  "theme_color": "#1A2420",
+  "background_color": "#1A2420",
   "display": "standalone",
   "start_url": "/",
   "scope": "/",

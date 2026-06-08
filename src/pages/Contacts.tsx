@@ -38,7 +38,7 @@ const Contacts: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-5"
       >
-        <h1 className="gradient-text">Контакты</h1>
+        <h2 className="gradient-text">Контакты</h2>
       </motion.div>
 
       <motion.div
@@ -59,7 +59,7 @@ const Contacts: React.FC = () => {
           >
             <img
               src={withBase('facade-building.png')}
-              alt="Фасад здания"
+              alt="Кабинет мастера маникюра — ул. Маяковского 12, Железнодорожный, Балашиха"
               className="contacts-card__facade-image"
               loading="lazy"
             />
@@ -69,7 +69,7 @@ const Contacts: React.FC = () => {
             <motion.div
               className="contacts-card__item"
               whileHover={{ scale: 1.02 }}
-              onClick={() => window.open('https://yandex.ru/maps/', '_blank')}
+              onClick={() => window.open('https://yandex.ru/maps/?text=Балашиха,+ул.+Маяковского,+12', '_blank')}
             >
               <LocationIcon size={24} color="var(--primary-rose)" />
               <div>
