@@ -150,6 +150,20 @@ CREATE INDEX idx_booked_slots_date ON booked_slots(date);
 CREATE INDEX idx_booked_slots_date_time ON booked_slots(date, time);
 ```
 
+**Row Level Security (обязательно — Supabase Advisor):**
+
+После создания таблиц выполните скрипт из [`server/supabase/rls.sql`](server/supabase/rls.sql) в SQL Editor.
+Он включает RLS и закрывает прямой доступ через `anon` key. Бэкенд с **`service_role`** продолжит работать.
+
+```sql
+-- Кратко: включить RLS + policies только для service_role
+ALTER TABLE public.booked_slots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.working_days ENABLE ROW LEVEL SECURITY;
+-- (полный скрипт — в server/supabase/rls.sql)
+```
+
+⚠️ **Не используйте anon key** в `SUPABASE_KEY` на бэкенде и в GitHub Secrets для keep-alive — только `service_role`.
+
 **Получение ключей Supabase:**
 1. Откройте проект в Supabase
 2. Settings → API
@@ -187,7 +201,7 @@ CREATE INDEX idx_booked_slots_date_time ON booked_slots(date, time);
 | Secret | Обязательный | Значение |
 |---|---|---|
 | `SUPABASE_URL` | да | URL проекта, напр. `https://xxxx.supabase.co` |
-| `SUPABASE_KEY` | да | `service_role` или `anon` ключ (хватит anon) |
+| `SUPABASE_KEY` | да | **`service_role` key** (не anon — иначе keep-alive и API не пройдут RLS) |
 | `KEEPALIVE_API_URL` | нет | полный URL `https://your-api/api/keepalive`, если хотите пинговать и бэкенд |
 
 После этого можно запустить workflow вручную:

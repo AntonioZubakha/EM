@@ -6,7 +6,7 @@ name: Supabase Keep-Alive
 #
 # Необходимые GitHub Secrets (Settings → Secrets and variables → Actions):
 #   - SUPABASE_URL           URL проекта (https://xxx.supabase.co)
-#   - SUPABASE_KEY           service_role или anon ключ
+#   - SUPABASE_KEY           service_role key (обязательно при RLS; anon не подойдёт)
 # Опционально:
 #   - KEEPALIVE_API_URL      полный URL до /api/keepalive вашего бэкенда
 #                            (если задан — будем пинговать и его)
